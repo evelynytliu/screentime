@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家庭螢幕時間管理</title>
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Poppins', sans-serif;
+      margin: 20px;
+    }
+    #children, #family-select, #current-family {
+      margin-top: 20px;
+      text-align: center;
+    }
+    #family-select button, #reset-family {
+      font-size: 20px;
+      padding: 15px 30px;
+      margin: 10px;
+      border-radius: 10px;
+      background: #00d4ff;
+      color: #111;
+      border: none;
+      cursor: pointer;
+    }
+    #current-family {
+      font-size: 22px;
+      margin-top: 10px;
+      color: #00d4ff;
+    }
+    .child-card {
+      background: #1c1c3c;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+    }
+    .points-box {
+      background: #222;
+      padding: 20px;
+      border-radius: 15px;
+      font-size: 30px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #00d4ff;
+    }
+    .conversion-info {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    .progress-bar-container {
+      background: #222;
+      border: 2px solid #00d4ff;
+      border-radius: 30px;
+      overflow: hidden;
+      height: 50px;
+      width: 80%;
+      margin: 20px auto;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+    }
+    .progress-bar-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 0;
+      line-height: 50px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 20px;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    .control-group {
+      background: #2a2a5a;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .control-group-title {
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #00d4ff;
+    }
+    .control-group input, .control-group button {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+    .control-group button {
+      background: #00d4ff;
+      color: #111;
+      cursor: pointer;
+    }
+    .alert {
+      color: #ff6b6b;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>家庭螢幕時間管理</h1>
+<div id="family-select"></div>
+<div id="current-family"></div>
+<button id="reset-family" onclick="resetFamilyChoice()">重新選擇家庭</button>
+<div id="children"></div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
+let kids = [];
+let family = localStorage.getItem('family') || '';
+
+function chooseFamily() {
+  const container = document.getElementById('family-select');
+  container.innerHTML = `
+    <button onclick="selectFamily('ev-family')">Emmett & Miles</button>
+    <button onclick="selectFamily('ap-family')">Archer & Tessa</button>
+  `;
+  document.getElementById('current-family').innerText = '';
+}
+
+function selectFamily(fam) {
+  family = fam;
+  localStorage.setItem('family', family);
+  loadData();
+}
+
+function resetFamilyChoice() {
+  localStorage.removeItem('family');
+  family = '';
+  document.getElementById('children').innerHTML = '';
+  chooseFamily();
+}
+
+function loadData() {
+  if (!family) {
+    chooseFamily();
+    return;
+  }
+  fetch(`${API_URL}?family=${family}`)
+    .then(res => res.json())
+    .then(data => {
+      kids = data;
+      render();
+      const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
+      document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
+    });
+}
+
+function saveData(index) {
+  fetch(`${API_URL}?family=${family}`, {
+    method: 'POST',
+    body: JSON.stringify(kids[index]),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(() => loadData());
+}
+
+function render() {
+  const container = document.getElementById('children');
+  container.innerHTML = '';
+
+  kids.forEach((kid, index) => {
+    const maxMinutes = 90;
+    const percentage = Math.min(100, (kid.ScreenMinutes / maxMinutes) * 100);
+    const minutes = kid.Points * 2;
+    const cash = kid.Points * 5;
+    const barColor = kid.ScreenMinutes <= 10 ? 'linear-gradient(90deg, #ff4d4d, #ff0000)' : 'linear-gradient(90deg, #00d4ff, #005eff)';
+
+    const card = document.createElement('div');
+    card.className = 'child-card';
+    card.innerHTML = `
+      <h2>${kid.Name}</h2>
+      <div class="points-box">
+        ${kid.Points} 點
+        <div class="conversion-info">⏱️ ${minutes} 分鐘 💰 ${cash} 元</div>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width:${percentage}%; background: ${barColor};"></div>
+        <div class="progress-bar-text">${kid.ScreenMinutes}分</div>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <div class="control-group-title">⏳ 螢幕時間設定</div>
+          <input type="number" id="screen${index}" placeholder="減少螢幕時間 (分鐘)">
+          <button onclick="decreaseScreen(${index})">確認減少</button>
+          <input type="number" id="reset${index}" placeholder="手動設定今日螢幕時間">
+          <button onclick="resetScreen(${index})">設定時間</button>
+          <button onclick="convertScreenToPoints(${index})">轉換螢幕時間為點數</button>
+        </div>
+        <div class="control-group">
+          <div class="control-group-title">🎯 點數調整</div>
+          <input type="number" id="points${index}" placeholder="輸入加/減點數">
+          <input type="text" id="reason${index}" placeholder="原因">
+          <button onclick="updatePoints(${index})">確認更新</button>
+        </div>
+      </div>
+      <div>最後修改時間：${kid.LastModified || 'N/A'}</div>
+      <div id="alert${index}" class="alert"></div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function updatePoints(index) {
+  const change = parseInt(document.getElementById(`points${index}`).value);
+  if (isNaN(change)) return;
+  kids[index].Points += change;
+  saveData(index);
+}
+
+function decreaseScreen(index) {
+  const minutes = parseInt(document.getElementById(`screen${index}`).value);
+  if (isNaN(minutes) || minutes <= 0) return;
+  kids[index].ScreenMinutes = Math.max(0, kids[index].ScreenMinutes - minutes);
+  saveData(index);
+}
+
+function resetScreen(index) {
+  const minutes = parseInt(document.getElementById(`reset${index}`).value);
+  if (isNaN(minutes) || minutes < 0) return;
+  kids[index].ScreenMinutes = minutes;
+  saveData(index);
+}
+
+function convertScreenToPoints(index) {
+  const availableMinutes = kids[index].ScreenMinutes;
+  const pointsToAdd = Math.floor(availableMinutes / 2);
+  if (pointsToAdd <= 0) return;
+
+  if (confirm(`將剩餘 ${availableMinutes} 分鐘轉換成 ${pointsToAdd} 點嗎？`)) {
+    kids[index].Points += pointsToAdd;
+    kids[index].ScreenMinutes = 0;
+    saveData(index);
+  }
+}
+
+loadData();
+</script>
+
+</body>
+</html>
