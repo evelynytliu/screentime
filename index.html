@@ -10,25 +10,10 @@
       color: #eee;
       font-family: 'Poppins', sans-serif;
       margin: 20px;
-    }
-    #children, #family-select, #current-family {
-      margin-top: 20px;
       text-align: center;
     }
-    #family-select button, #reset-family {
-      font-size: 20px;
-      padding: 15px 30px;
-      margin: 10px;
-      border-radius: 10px;
-      background: #00d4ff;
-      color: #111;
-      border: none;
-      cursor: pointer;
-    }
-    #current-family {
-      font-size: 22px;
-      margin-top: 10px;
-      color: #00d4ff;
+    #children {
+      margin-top: 20px;
     }
     .child-card {
       background: #1c1c3c;
@@ -92,21 +77,33 @@
       font-weight: bold;
       color: #00d4ff;
     }
-    .control-group input, .control-group button {
+    .control-group input, .control-group button, #reset-family {
       margin: 5px;
       padding: 10px;
       font-size: 16px;
       border-radius: 8px;
       border: none;
     }
-    .control-group button {
+    .control-group button, #reset-family {
       background: #00d4ff;
       color: #111;
       cursor: pointer;
     }
+    #family-select button {
+      font-size: 20px;
+      padding: 15px 30px;
+      margin: 10px;
+      border-radius: 10px;
+      background: #00d4ff;
+      color: #111;
+      border: none;
+      cursor: pointer;
+    }
     .alert {
-      color: #ff6b6b;
+      color: #00ff88;
       font-weight: bold;
+      margin-top: 10px;
+      transition: opacity 0.5s ease;
     }
   </style>
 </head>
@@ -115,8 +112,8 @@
 <h1>家庭螢幕時間管理</h1>
 <div id="family-select"></div>
 <div id="current-family"></div>
-<button id="reset-family" onclick="resetFamilyChoice()">重新選擇家庭</button>
 <div id="children"></div>
+<div style="margin-top: 30px;"><button id="reset-family" onclick="resetFamilyChoice()">重新選擇家庭</button></div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
@@ -150,43 +147,76 @@ function loadData() {
     chooseFamily();
     return;
   }
-  
+
   document.getElementById('children').innerHTML = '<div>正在載入資料...</div>';
-  
+
   fetch(`${API_URL}?family=${family}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
+    .then(res => res.text())
+    .then(text => {
+      try {
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+          kids = data;
+        } else {
+          kids = [];
+        }
+      } catch (e) {
+        kids = [];
       }
-      return res.json();
-    })
-    .then(data => {
-      console.log("資料載入成功:", data);
-      if (data.error) {
-        document.getElementById('children').innerHTML = `<div class="alert">錯誤: ${data.error}</div>`;
-        return;
-      }
-      if (!Array.isArray(data) || data.length === 0) {
-        document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料</div>';
-        return;
-      }
-      kids = data;
       render();
       const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
       document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
-    })
-    .catch(error => {
-      console.error("資料載入錯誤:", error);
-      document.getElementById('children').innerHTML = `<div class="alert">資料載入錯誤: ${error.message}</div>`;
     });
 }
 
 function saveData(index) {
+  console.log("嘗試儲存資料，索引:", index, "資料:", kids[index]); // 新增日誌
+
   fetch(`${API_URL}?family=${family}`, {
     method: 'POST',
     body: JSON.stringify(kids[index]),
     headers: { 'Content-Type': 'application/json' }
-  }).then(() => loadData());
+  })
+  .then(res => {
+    console.log("收到儲存請求的回應:", res); // 新增日誌
+    if (!res.ok) {
+      // 如果 HTTP 狀態碼不是成功的 (例如 404, 500 等)
+      // 嘗試讀取回應的文字內容作為錯誤訊息
+      return res.text().then(text => {
+          const errorMsg = `HTTP 錯誤! 狀態碼: ${res.status}, 訊息: ${text}`;
+          console.error("儲存失敗，HTTP 錯誤:", errorMsg); // 新增日誌
+          throw new Error(errorMsg); // 拋出錯誤以便被 catch 捕獲
+      });
+    }
+    // 如果回應狀態碼是 OK 的，讀取回應的文字內容
+    return res.text();
+  })
+  .then(responseText => {
+    // 這裡的 responseText 是 Apps Script 中 doPost 函數返回的文字 (例如 'Done' 或 'Row not found' 或 'Error: ...')
+    console.log("儲存成功，Apps Script 回應:", responseText); // 新增日誌
+    // 檢查 Apps Script 返回的訊息是否表示成功
+    if (responseText === 'Done') {
+        // 儲存成功後，重新載入資料以更新網頁顯示
+        loadData();
+        // 清空可能的錯誤訊息顯示
+        // document.getElementById(`alert${index}`).innerText = '';
+    } else {
+        // 如果 Apps Script 返回了非 'Done' 的訊息，可能表示後端有邏輯錯誤或未找到行
+         const alertElement = document.getElementById(`alert${index}`);
+         if(alertElement) {
+             alertElement.innerText = `儲存錯誤: ${responseText}`; // 在網頁上顯示錯誤訊息
+         }
+         console.error("Apps Script 返回非預期訊息:", responseText); // 新增日誌
+    }
+  })
+  .catch(error => {
+    // 捕獲 fetch 請求過程中發生的任何錯誤 (包括之前拋出的 HTTP 錯誤)
+    console.error("儲存資料發生錯誤:", error); // 新增日誌
+     const alertElement = document.getElementById(`alert${index}`);
+     if(alertElement) {
+        alertElement.innerText = `儲存資料錯誤: ${error.message}`; // 在網頁上顯示錯誤訊息
+     }
+  });
 }
 
 function render() {
@@ -204,6 +234,7 @@ function render() {
     card.className = 'child-card';
     card.innerHTML = `
       <h2>${kid.Name}</h2>
+      <div id="alert${index}" class="alert" style="opacity:0;"></div>
       <div class="points-box">
         ${kid.Points} 點
         <div class="conversion-info">⏱️ ${minutes} 分鐘 💰 ${cash} 元</div>
@@ -229,7 +260,6 @@ function render() {
         </div>
       </div>
       <div>最後修改時間：${kid.LastModified || 'N/A'}</div>
-      <div id="alert${index}" class="alert"></div>
     `;
     container.appendChild(card);
   });
@@ -253,6 +283,7 @@ function resetScreen(index) {
   const minutes = parseInt(document.getElementById(`reset${index}`).value);
   if (isNaN(minutes) || minutes < 0) return;
   kids[index].ScreenMinutes = minutes;
+  kids[index].LastModified = new Date().toLocaleString('zh-TW', { hour12: false });
   saveData(index);
 }
 
@@ -264,6 +295,7 @@ function convertScreenToPoints(index) {
   if (confirm(`將剩餘 ${availableMinutes} 分鐘轉換成 ${pointsToAdd} 點嗎？`)) {
     kids[index].Points += pointsToAdd;
     kids[index].ScreenMinutes = 0;
+    kids[index].LastModified = new Date().toLocaleString('zh-TW', { hour12: false });
     saveData(index);
   }
 }
