@@ -141,34 +141,48 @@ function resetFamilyChoice() {
   document.getElementById('children').innerHTML = '';
   chooseFamily();
 }
-
+function loadScriptWithCallback(url, callback) {
+  const script = document.createElement('script');
+  window[callback] = function(data) {
+    script.remove();  // 移除腳本標籤以避免內存洩漏
+    delete window[callback];  // 清理全局函數
+    handleData(data);  // 實際處理資料
+  };
+  script.src = url;
+  script.onerror = function() {
+    document.getElementById('children').innerHTML = '<div class="alert">載入資料失敗</div>';
+    script.remove();
+    delete window[callback];
+  };
+  document.head.appendChild(script);
+}
 function loadData() {
   if (!family) {
     chooseFamily();
     return;
   }
-
+  
   document.getElementById('children').innerHTML = '<div>正在載入資料...</div>';
-
-  fetch(`${API_URL}?family=${family}`)
-    .then(res => res.text())
-    .then(text => {
-      try {
-        const data = JSON.parse(text);
-        if (Array.isArray(data)) {
-          kids = data;
-        } else {
-          kids = [];
-        }
-      } catch (e) {
-        kids = [];
-      }
-      render();
-      const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
-      document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
-    });
+  
+  // 建立唯一的回調函數名稱
+  const callbackName = 'jsonCallback_' + Math.floor(Math.random() * 1000000);
+  
+  // 載入資料
+  loadScriptWithCallback(`${API_URL}?family=${family}&callback=${callbackName}`, callbackName);
 }
 
+function handleData(data) {
+  console.log("資料載入成功:", data);
+  if (!Array.isArray(data) || data.length === 0) {
+    document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料</div>';
+    return;
+  }
+  kids = data;
+  render();
+  const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
+  document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
+}  
+  
 function saveData(index) {
   console.log("嘗試儲存資料，索引:", index, "資料:", kids[index]); // 新增日誌
 
