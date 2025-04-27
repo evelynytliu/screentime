@@ -150,13 +150,34 @@ function loadData() {
     chooseFamily();
     return;
   }
+  
+  document.getElementById('children').innerHTML = '<div>正在載入資料...</div>';
+  
   fetch(`${API_URL}?family=${family}`)
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
+      console.log("資料載入成功:", data);
+      if (data.error) {
+        document.getElementById('children').innerHTML = `<div class="alert">錯誤: ${data.error}</div>`;
+        return;
+      }
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料</div>';
+        return;
+      }
       kids = data;
       render();
       const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
       document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
+    })
+    .catch(error => {
+      console.error("資料載入錯誤:", error);
+      document.getElementById('children').innerHTML = `<div class="alert">資料載入錯誤: ${error.message}</div>`;
     });
 }
 
