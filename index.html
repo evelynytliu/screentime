@@ -592,7 +592,7 @@ function convertScreenTime(name, minutes) {
       return;
     }
     const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
-    const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：`), 10);
+    const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：\n1點 → 2分鐘`), 10);
     if (isNaN(pointsToConvert) || pointsToConvert <= 0 || pointsToConvert > points) {
       alert('輸入的數量無效或超過現有點數');
       return;
@@ -688,7 +688,7 @@ function convertScreenTime(name, minutes) {
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 13:17
+Made by Evelyn YT ｜© 2025 | 2025/4/28 19:33
 </div>
 
 </body>
