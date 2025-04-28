@@ -3,69 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>家庭點數排行榜</title>
+  <title>Point & Screen Time</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: #111;
       color: #eee;
       text-align: center;
       padding: 20px;
     }
-    table {
-      width: 100%;
-      max-width: 600px;
+    .child-card {
+      background: #1c1c3c;
+      padding: 30px;
       margin: 20px auto;
-      border-collapse: collapse;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,212,255,0.4);
+      max-width: 400px;
+    }
+    .child-name {
+      font-size: 28px;
+      font-weight: bold;
+      color: #00d4ff;
+      margin-bottom: 20px;
+    }
+    .points-box {
       background: #222;
-      border-radius: 10px;
+      padding: 20px;
+      border-radius: 20px;
+      font-size: 40px;
+      font-weight: bold;
+      color: #00d4ff;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    .conversion-info {
+      font-size: 14px;
+      color: #ccc;
+      margin-top: 10px;
+    }
+    .progress-title {
+      font-size: 18px;
+      color: #00d4ff;
+      margin: 10px 0 5px 0;
+    }
+    .progress-bar-container {
+      background: #222;
+      border: 2px solid #00d4ff;
+      border-radius: 30px;
       overflow: hidden;
+      height: 50px;
+      width: 80%;
+      margin: 0 auto 10px auto;
+      position: relative;
     }
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #444;
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+      background: linear-gradient(90deg, #00d4ff, #005eff);
     }
-    th {
+    .progress-bar-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 0;
+      line-height: 50px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 20px;
+    }
+    .convert-button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
       background: #00d4ff;
       color: #111;
+      font-weight: bold;
+      cursor: pointer;
     }
-    tr:hover {
-      background: #333;
+    #form-section {
+      background: #2a2a5a;
+      padding: 20px;
+      border-radius: 20px;
+      max-width: 400px;
+      margin: 40px auto;
     }
     input, button {
       padding: 10px;
-      margin: 5px;
+      margin: 8px;
       font-size: 16px;
-      border-radius: 5px;
+      border-radius: 8px;
       border: none;
+      width: 80%;
     }
     button {
       background: #00d4ff;
       color: #111;
       cursor: pointer;
+      font-weight: bold;
     }
-    #form-section {
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 600px;
-      margin: 30px auto;
+    table {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<h1>家庭點數排行榜</h1>
+<h1>🎯 Point & Screen Time ⏳</h1>
 <div id="leaderboard">載入中...</div>
 
 <div id="form-section">
-  <h2>送出新紀錄</h2>
+  <h2>送出新紀錄 📝</h2>
   <input type="text" id="family" placeholder="Family">
   <input type="text" id="name" placeholder="Name">
   <input type="number" id="pointsChange" placeholder="PointsChange">
   <input type="number" id="screenMinutesChange" placeholder="ScreenMinutesChange">
   <input type="text" id="reason" placeholder="Reason">
-  <button onclick="submitData()">送出</button>
+  <button onclick="submitData()">送出 🚀</button>
 </div>
 
 <script>
@@ -88,12 +144,104 @@ function renderLeaderboard(data) {
     document.getElementById('leaderboard').innerText = '載入失敗';
     return;
   }
-  let html = '<table><tr><th>名字</th><th>總點數</th><th>總螢幕時間</th></tr>';
-  data.forEach(entry => {
-    html += `<tr><td>${entry.Name}</td><td>${entry.TotalPoints}</td><td>${entry.TotalScreenMinutes}</td></tr>`;
+  let html = '';
+  data.forEach((entry, index) => {
+    const percentage = Math.min(100, (entry.TotalScreenMinutes / 120) * 100);
+    const screenMinutes = entry.TotalPoints * 2;
+    const cash = entry.TotalPoints * 5;
+    html += `
+    <div class="child-card">
+      <div class="child-name">👦 ${entry.Name}</div>
+      <div class="points-box">⭐ ${entry.TotalPoints} 點
+        <div class="conversion-info">⏳ ${screenMinutes} 分鐘 ｜ 💰 ${cash} 元</div>
+      </div>
+      <div class="progress-title">📺 今日螢幕時間</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width:${percentage}%"></div>
+        <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
+      </div>
+      <button class="convert-button" onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">螢幕時間轉換為點數 🎁</button>
+      <button class="convert-button" onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">點數轉換為螢幕時間 🎮</button>
+    </div>
+    `;
   });
-  html += '</table>';
   document.getElementById('leaderboard').innerHTML = html;
+}
+
+function convertScreenTime(name, minutes) {
+  const pointsToAdd = Math.floor(minutes / 2);
+  if (pointsToAdd <= 0) {
+    alert('沒有可轉換的螢幕時間！');
+    return;
+  }
+
+  const family = prompt('請輸入 Family 名稱以確認：');
+  if (!family) {
+    alert('取消轉換');
+    return;
+  }
+
+  const payload = {
+    Family: family,
+    Name: name,
+    PointsChange: pointsToAdd,
+    ScreenMinutesChange: -minutes,
+    Reason: '螢幕時間轉換為點數'
+  };
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+  document.body.appendChild(iframe);
+
+  alert(`已將 ${minutes} 分鐘轉換成 ${pointsToAdd} 點！`);
+  setTimeout(() => {
+    location.reload();
+  }, 1500);
+}
+
+function convertPointsToScreen(name, points) {
+  if (points <= 0) {
+    alert('沒有可轉換的點數！');
+    return;
+  }
+
+  const family = prompt('請輸入 Family 名稱以確認：');
+  if (!family) {
+    alert('取消轉換');
+    return;
+  }
+
+  const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：`), 10);
+
+  if (isNaN(pointsToConvert) || pointsToConvert <= 0) {
+    alert('輸入的數量無效');
+    return;
+  }
+  if (pointsToConvert > points) {
+    alert('不能轉換超過現有點數的數量');
+    return;
+  }
+
+  const minutesToAdd = pointsToConvert * 2;
+
+  const payload = {
+    Family: family,
+    Name: name,
+    PointsChange: -pointsToConvert,
+    ScreenMinutesChange: minutesToAdd,
+    Reason: '點數轉換為螢幕時間'
+  };
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+  document.body.appendChild(iframe);
+
+  alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
+  setTimeout(() => {
+    location.reload();
+  }, 1500);
 }
 
 function submitData() {
@@ -130,6 +278,6 @@ function submitData() {
 fetchLeaderboard();
 </script>
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 11:03
+Made by Evelyn YT ｜© 2025 | 2025/4/28 11:31
 </body>
 </html>
