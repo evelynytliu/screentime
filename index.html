@@ -367,6 +367,11 @@ function renderLeaderboard(data) {
       }
       return true;
     });
+    document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+  const targetPercentage = bar.getAttribute('data-percentage');
+  bar.style.width = targetPercentage + '%';
+});
+
   }
 
   const nameList = document.getElementById('name-list');
@@ -402,7 +407,7 @@ data.forEach(entry => {
       </div>
       <div class="progress-title">📺 今日螢幕時間</div>
       <div class="progress-bar-container">
-      <div class="progress-bar-fill" style="width:${percentage}%"></div>
+      <div class="progress-bar-fill" data-percentage="${percentage}"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
       <div class="deduct-buttons">
