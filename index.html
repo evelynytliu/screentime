@@ -423,6 +423,12 @@ data.forEach(entry => {
     `;
   });
   leaderboard.innerHTML = html;
+
+  // 🔥 然後加上這段，設定進度條寬度
+document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+  const targetPercentage = bar.getAttribute('data-percentage');
+  bar.style.width = targetPercentage + '%';
+});
 }
 
 function submitData() {
