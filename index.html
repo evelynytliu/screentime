@@ -216,6 +216,32 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+.deduct-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.deduct-buttons button {
+  padding: 6px 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: #333;
+  color: #ccc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deduct-buttons button:hover {
+  background: #555;
+}
+
+.deduct-buttons button:active {
+  background: #777;
+}
 
   </style>
 </head>
@@ -335,6 +361,11 @@ data.forEach(entry => {
         <div class="progress-bar-fill" style="width:${percentage}%"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
+      <div class="deduct-buttons">
+  ${[5,10,15,20,25,30].map(minutes => `
+    <button onclick="deductScreenTime('${entry.Name}', ${minutes})">${minutes}</button>
+  `).join('')}
+</div>
       <div class="convert-button-group">
         <button onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">📺 ➔ ⭐</button>
         <button onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">⭐ ➔ 📺</button>
@@ -464,6 +495,38 @@ function setMaxMinutes() {
   maxMinutes = value;
   localStorage.setItem('maxMinutes', maxMinutes);
   fetchLeaderboard(); // 重新渲染
+}
+function deductScreenTime(name, minutesToDeduct) {
+  const confirmDeduct = confirm(`確定要扣除 ${minutesToDeduct} 分鐘的螢幕時間嗎？`);
+  if (!confirmDeduct) return;
+
+  let family = '';
+  if (name === 'Miles' || name === 'Emmett') {
+    family = 'ev-family';
+  } else if (name === 'Tessa' || name === 'Archer') {
+    family = 'ap-family';
+  }
+
+  if (!family) {
+    alert('找不到對應家庭');
+    return;
+  }
+
+  const payload = {
+    Family: family,
+    Name: name,
+    PointsChange: 0,
+    ScreenMinutesChange: -minutesToDeduct,
+    Reason: `扣除螢幕時間${minutesToDeduct}分鐘`
+  };
+
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+  document.body.appendChild(iframe);
+
+  alert(`已扣除 ${minutesToDeduct} 分鐘螢幕時間！`);
+  fetchLeaderboard();
 }
 
 </script>
