@@ -179,7 +179,112 @@ function renderLeaderboard(data) {
   });
   document.getElementById('leaderboard').innerHTML = html;
 }
-
+function convertScreenTime(name, minutes) {
+   const pointsToAdd = Math.floor(minutes / 2);
+   if (pointsToAdd <= 0) {
+     alert('沒有可轉換的螢幕時間！');
+     return;
+   }
+ 
+   const family = prompt('請輸入 Family 名稱以確認：');
+   if (!family) {
+     alert('取消轉換');
+     return;
+   }
+ 
+   const payload = {
+     Family: family,
+     Name: name,
+     PointsChange: pointsToAdd,
+     ScreenMinutesChange: -minutes,
+     Reason: '螢幕時間轉換為點數'
+   };
+ 
+   const iframe = document.createElement('iframe');
+   iframe.style.display = 'none';
+   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+   document.body.appendChild(iframe);
+ 
+   alert(`已將 ${minutes} 分鐘轉換成 ${pointsToAdd} 點！`);
+   setTimeout(() => {
+     location.reload();
+   }, 1500);
+ }
+ 
+ function convertPointsToScreen(name, points) {
+   if (points <= 0) {
+     alert('沒有可轉換的點數！');
+     return;
+   }
+ 
+   const family = prompt('請輸入 Family 名稱以確認：');
+   if (!family) {
+     alert('取消轉換');
+     return;
+   }
+ 
+   const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：`), 10);
+ 
+   if (isNaN(pointsToConvert) || pointsToConvert <= 0) {
+     alert('輸入的數量無效');
+     return;
+   }
+   if (pointsToConvert > points) {
+     alert('不能轉換超過現有點數的數量');
+     return;
+   }
+ 
+   const minutesToAdd = pointsToConvert * 2;
+ 
+   const payload = {
+     Family: family,
+     Name: name,
+     PointsChange: -pointsToConvert,
+     ScreenMinutesChange: minutesToAdd,
+     Reason: '點數轉換為螢幕時間'
+   };
+ 
+   const iframe = document.createElement('iframe');
+   iframe.style.display = 'none';
+   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+   document.body.appendChild(iframe);
+ 
+   alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
+   setTimeout(() => {
+     location.reload();
+   }, 1500);
+ }
+ 
+ function submitData() {
+   const family = document.getElementById('family').value.trim();
+   const name = document.getElementById('name').value.trim();
+   const pointsChange = document.getElementById('pointsChange').value.trim();
+   const screenMinutesChange = document.getElementById('screenMinutesChange').value.trim();
+   const reason = document.getElementById('reason').value.trim();
+ 
+   if (!family || !name) {
+     alert('Family 和 Name 必填');
+     return;
+   }
+ 
+   const payload = {
+     Family: family,
+     Name: name,
+     PointsChange: pointsChange,
+     ScreenMinutesChange: screenMinutesChange,
+     Reason: reason
+   };
+ 
+   const iframe = document.createElement('iframe');
+   iframe.style.display = 'none';
+   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+   document.body.appendChild(iframe);
+ 
+   alert('送出成功');
+   setTimeout(() => {
+     location.reload();
+   }, 1500);
+ }
 function submitData() { /* unchanged */ }
 function convertScreenTime(name, minutes) { /* unchanged */ }
 function convertPointsToScreen(name, points) { /* unchanged */ }
