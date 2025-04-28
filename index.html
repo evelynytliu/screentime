@@ -218,10 +218,11 @@
 }
 .deduct-buttons {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
   margin-top: 10px;
+  flex-wrap: nowrap; /* 🔥 不換行 */
+  overflow-x: auto; /* 🔥 如果真的很擠，可以左右滑動 */
 }
 
 .deduct-buttons button {
@@ -233,6 +234,7 @@
   color: #ccc;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex: 0 0 auto; /* 🔥 讓每顆按鈕固定大小 */
 }
 
 .deduct-buttons button:hover {
@@ -242,6 +244,7 @@
 .deduct-buttons button:active {
   background: #777;
 }
+
 
   </style>
 </head>
@@ -532,7 +535,7 @@ function deductScreenTime(name, minutesToDeduct) {
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 14:01
+Made by Evelyn YT ｜© 2025 | 2025/4/28 14:35
 </div>
 
 </body>
