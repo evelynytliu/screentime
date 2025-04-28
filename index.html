@@ -154,6 +154,42 @@
   color: #111; /* 字黑色 */
 }
 
+    .checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  display: none; /* 🔥 隱藏原本的勾勾框框 */
+}
+
+.checkbox-group label {
+  display: inline-block;
+  padding: 12px 20px;
+  background: #333;
+  color: #ccc;
+  border-radius: 20px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+/* hover效果 */
+.checkbox-group label:hover {
+  background: #555;
+}
+
+/* 當checkbox被選取時，改變外觀！ */
+.checkbox-group input[type="checkbox"]:checked + label {
+  background: #00d4ff;
+  color: #111;
+  font-weight: bold;
+}
+
   </style>
 </head>
 <body>
@@ -230,11 +266,22 @@ function renderLeaderboard(data) {
 
   const nameList = document.getElementById('name-list');
   nameList.innerHTML = '';
-  data.forEach(entry => {
-    const label = document.createElement('label');
-    label.innerHTML = `<input type="checkbox" value="${entry.Name}"> ${entry.Name}`;
-    nameList.appendChild(label);
-  });
+data.forEach(entry => {
+  const id = 'child-' + entry.Name; // 🔥 產生一個獨特id（防止重複）
+  
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.id = id;
+  checkbox.value = entry.Name;
+
+  const label = document.createElement('label');
+  label.setAttribute('for', id);
+  label.textContent = entry.Name;
+
+  nameList.appendChild(checkbox);
+  nameList.appendChild(label);
+});
+
 
   let html = '';
   data.forEach(entry => {
