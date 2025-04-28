@@ -174,6 +174,9 @@
   <input type="number" id="screenMinutesChange" placeholder="📺今日螢幕時間調整">
   <input type="text" id="reason" placeholder="變更原因">
   <button onclick="submitData()">送出 🚀</button>
+  <input type="number" id="maxMinutesInput" placeholder="🔧設定最大螢幕時間(分鐘)">
+  <button onclick="setMaxMinutes()">設定最大時間</button>
+
 </div>
 
 <script>
@@ -234,7 +237,7 @@ function renderLeaderboard(data) {
 
   let html = '';
   data.forEach(entry => {
-    const percentage = Math.min(100, (entry.TotalScreenMinutes / 120) * 100);
+    const percentage = Math.min(100, (entry.TotalScreenMinutes / maxMinutes) * 100);
     const screenMinutes = entry.TotalPoints * 2;
     const cash = entry.TotalPoints * 5;
     html += `
@@ -363,10 +366,26 @@ function convertPointsToScreen(name, points) {
 }
 
 fetchLeaderboard();
+  let maxMinutes = localStorage.getItem('maxMinutes') ? parseInt(localStorage.getItem('maxMinutes')) : 120;
+
+function setMaxMinutes() {
+  const input = document.getElementById('maxMinutesInput').value.trim();
+  const value = parseInt(input, 10);
+
+  if (isNaN(value) || value <= 0) {
+    alert('請輸入有效的分鐘數！');
+    return;
+  }
+
+  maxMinutes = value;
+  localStorage.setItem('maxMinutes', maxMinutes);
+  fetchLeaderboard(); // 重新渲染
+}
+
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 13:43
+Made by Evelyn YT ｜© 2025 | 2025/4/28 13:59
 </div>
 
 </body>
