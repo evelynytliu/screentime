@@ -107,6 +107,17 @@
     table {
       display: none;
     }
+    .convert-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.convert-button {
+  flex: 1;
+  padding: 10px 0;
+}
+
   </style>
 </head>
 <body>
@@ -160,8 +171,11 @@ function renderLeaderboard(data) {
         <div class="progress-bar-fill" style="width:${percentage}%"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
-      <button class="convert-button" onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">螢幕時間轉換為點數 🎁</button>
-      <button class="convert-button" onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">點數轉換為螢幕時間 🎮</button>
+<div class="convert-button-group">
+  <button class="convert-button" onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">📺 ➔ ⭐</button>
+  <button class="convert-button" onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">⭐ ➔ 📺</button>
+</div>
+
     </div>
     `;
   });
