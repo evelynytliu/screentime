@@ -315,6 +315,7 @@ let familyFilter = localStorage.getItem('familyFilter') || '';
 function setFamilyFilter(family) {
   familyFilter = family;
   localStorage.setItem('familyFilter', family);
+  showLoading();   // 🔥 加這行
   fetchLeaderboard();
 }
 
