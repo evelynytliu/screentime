@@ -304,6 +304,8 @@
 </div>
 
 <script>
+  let updatedChildName = '';
+
   let currentScreenTimes = {}; 
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
@@ -425,6 +427,7 @@ function submitData() {
 
   checkboxes.forEach(checkbox => {
     const name = checkbox.value;
+    updatedChildName = name;
     let family = '';
 
     if (name === 'Miles' || name === 'Emmett') {
@@ -479,6 +482,8 @@ function convertScreenTime(name, minutes) {
     ScreenMinutesChange: -minutes,
     Reason: '螢幕時間轉點數'
   };
+  updatedChildName = name;
+
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
@@ -507,6 +512,8 @@ function convertPointsToScreen(name, points) {
     ScreenMinutesChange: minutesToAdd,
     Reason: '點數轉螢幕時間'
   };
+  updatedChildName = name;
+
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
@@ -565,6 +572,7 @@ function deductScreenTime(name, minutesToDeduct) {
     ScreenMinutesChange: -minutesToDeduct,
     Reason: `扣除螢幕時間${minutesToDeduct}分鐘`
   };
+updatedChildName = name;
 
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
