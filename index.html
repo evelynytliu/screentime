@@ -133,11 +133,25 @@
   padding: 10px 20px;
   font-size: 16px;
   border-radius: 8px;
-  background: #444;
-  color: #111;
+  background: #333; /* 🔥 深灰色起始 */
+  color: #ccc; /* 🔥 字淺灰 */
   font-weight: bold;
   border: none;
   cursor: pointer;
+}
+
+#family-filter button:hover {
+  background: #555; /* hover時淺一點的灰 */
+}
+
+#family-filter button:active {
+  background: #777; /* 按下去更亮一點 */
+}
+
+/* 🔥 選取的按鈕 */
+#family-filter button.active-filter {
+  background: #00d4ff; /* 亮藍色 */
+  color: #111; /* 字黑色 */
 }
 
   </style>
@@ -352,7 +366,7 @@ fetchLeaderboard();
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 11:46
+Made by Evelyn YT ｜© 2025 | 2025/4/28 13:43
 </div>
 
 </body>
