@@ -212,6 +212,17 @@
   color: #111;
   font-weight: bold;
 }
+
+#family-filter .small-button {
+  padding: 6px 10px;
+  font-size: 18px; /* 比其他家庭按鈕小一點 */
+  width: auto; /* 不要固定寬 */
+  min-width: 40px; /* 至少一點點寬，不會太小 */
+  height: 40px;
+  line-height: 40px;
+}
+
+    
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -252,7 +263,7 @@
   <div id="family-filter" style="margin-bottom: 20px;">
   <button onclick="setFamilyFilter('ev-family')">⚡ 閃電森林</button>
   <button onclick="setFamilyFilter('ap-family')">🍊 柚柚來點名</button>
-  <button onclick="clearFamilyFilter()">❎ 取消篩選</button>
+<button onclick="clearFamilyFilter()" class="small-button">❎</button>
 </div>
 
 <div id="leaderboard">載入中...</div>
