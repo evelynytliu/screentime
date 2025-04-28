@@ -550,25 +550,28 @@
     document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
   }
 
-  function convertScreenTime(name, minutes) {
-    if (minutes <= 0) {
-      alert('沒有可轉換的螢幕時間！');
-      return;
-    }
+function convertScreenTime(name, minutes) {
+  if (minutes <= 0) {
+    alert('沒有可轉換的螢幕時間！');
+    return;
+  }
 
-    if (!confirm('你確定要把今日螢幕時間轉換成點數嗎？')) {
-      return;
-    }
+  const pointsToAdd = Math.floor(minutes / 2); // 🔥 提到這裡，先算好要轉多少點
 
-    const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
-    const pointsToAdd = Math.floor(minutes / 2);
-    const payload = {
-      Family: family,
-      Name: name,
-      PointsChange: pointsToAdd,
-      ScreenMinutesChange: -minutes,
-      Reason: '螢幕時間轉點數'
-    };
+  const confirmMessage = `你確定要把今日螢幕時間轉換成點數嗎？\n\n【將轉換】${minutes} 分鐘螢幕時間\n【可獲得】${pointsToAdd} 點`; // 🔥 組好訊息
+
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
+  const payload = {
+    Family: family,
+    Name: name,
+    PointsChange: pointsToAdd,
+    ScreenMinutesChange: -minutes,
+    Reason: '螢幕時間轉點數'
+  };
     
     // 添加shimmer效果
     startShimmerEffect(name);
@@ -581,7 +584,6 @@
     iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
     document.body.appendChild(iframe);
 
-    alert(`已將 ${minutes} 分鐘螢幕時間轉換成 ${pointsToAdd} 點！`);
   }
 
   function convertPointsToScreen(name, points) {
