@@ -3,379 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>家庭螢幕時間管理</title>
+  <title>家庭點數排行榜</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
       background: #111;
       color: #eee;
-      font-family: 'Poppins', sans-serif;
-      margin: 20px;
       text-align: center;
-    }
-    #children {
-      margin-top: 20px;
-    }
-    .child-card {
-      background: #1c1c3c;
       padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,212,255,0.4);
     }
-    .points-box {
-      background: #222;
-      padding: 20px;
-      border-radius: 15px;
-      font-size: 30px;
-      font-weight: bold;
-      margin: 10px 0;
-      color: #00d4ff;
-    }
-    .conversion-info {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #ccc;
-    }
-    .progress-bar-container {
-      background: #222;
-      border: 2px solid #00d4ff;
-      border-radius: 30px;
-      overflow: hidden;
-      height: 50px;
-      width: 80%;
-      margin: 20px auto;
-      position: relative;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      transition: width 0.5s;
-    }
-    .progress-bar-text {
-      position: absolute;
+    table {
       width: 100%;
-      text-align: center;
-      top: 0;
-      line-height: 50px;
-      font-weight: bold;
-      color: #fff;
-      font-size: 20px;
-    }
-    .controls {
-      margin-top: 10px;
-    }
-    .control-group {
-      background: #2a2a5a;
-      padding: 15px;
+      max-width: 600px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #222;
       border-radius: 10px;
-      margin-bottom: 15px;
+      overflow: hidden;
     }
-    .control-group-title {
-      margin-bottom: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #00d4ff;
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #444;
     }
-    .control-group input, .control-group button, #reset-family {
-      margin: 5px;
+    th {
+      background: #00d4ff;
+      color: #111;
+    }
+    tr:hover {
+      background: #333;
+    }
+    input, button {
       padding: 10px;
+      margin: 5px;
       font-size: 16px;
-      border-radius: 8px;
+      border-radius: 5px;
       border: none;
     }
-    .control-group button, #reset-family {
+    button {
       background: #00d4ff;
       color: #111;
       cursor: pointer;
     }
-    #family-select button {
-      font-size: 20px;
-      padding: 15px 30px;
-      margin: 10px;
+    #form-section {
+      background: #222;
+      padding: 20px;
       border-radius: 10px;
-      background: #00d4ff;
-      color: #111;
-      border: none;
-      cursor: pointer;
-    }
-    .alert {
-      color: #00ff88;
-      font-weight: bold;
-      margin-top: 10px;
-      transition: opacity 0.5s ease;
-    }
-    .loading {
-      margin: 20px;
-      font-size: 18px;
-      color: #00d4ff;
-    }
-    .error {
-      color: #ff4d4d;
-      margin: 20px;
-      font-size: 16px;
+      max-width: 600px;
+      margin: 30px auto;
     }
   </style>
 </head>
 <body>
 
-<h1>家庭螢幕時間管理</h1>
-<div id="family-select"></div>
-<div id="current-family"></div>
-<div id="children"></div>
-<div style="margin-top: 30px;"><button id="reset-family" onclick="resetFamilyChoice()">重新選擇家庭</button></div>
+<h1>家庭點數排行榜</h1>
+<div id="leaderboard">載入中...</div>
+
+<div id="form-section">
+  <h2>送出新紀錄</h2>
+  <input type="text" id="family" placeholder="Family">
+  <input type="text" id="name" placeholder="Name">
+  <input type="number" id="pointsChange" placeholder="PointsChange">
+  <input type="number" id="screenMinutesChange" placeholder="ScreenMinutesChange">
+  <input type="text" id="reason" placeholder="Reason">
+  <button onclick="submitData()">送出</button>
+</div>
 
 <script>
-// 這是你的 Google Apps Script Web App URL
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
-let kids = [];
-let family = localStorage.getItem('family') || '';
 
-function chooseFamily() {
-  const container = document.getElementById('family-select');
-  container.innerHTML = `
-    <button onclick="selectFamily('ev-family')">Emmett & Miles</button>
-    <button onclick="selectFamily('ap-family')">Archer & Tessa</button>
-  `;
-  document.getElementById('current-family').innerText = '';
-}
-
-function selectFamily(fam) {
-  family = fam;
-  localStorage.setItem('family', family);
-  loadData();
-}
-
-function resetFamilyChoice() {
-  localStorage.removeItem('family');
-  family = '';
-  document.getElementById('children').innerHTML = '';
-  chooseFamily();
-}
-
-// 使用JSONP方法從Google Apps Script獲取資料
-function loadData() {
-  if (!family) {
-    chooseFamily();
-    return;
-  }
-  
-  document.getElementById('children').innerHTML = '<div class="loading">正在載入資料...</div>';
-  
-  // 創建一個隨機的回調函數名稱，以避免緩存問題
-  const callbackName = 'jsonCallback_' + Math.floor(Math.random() * 1000000);
-  
+function fetchLeaderboard() {
+  const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
   window[callbackName] = function(data) {
-    // 處理從API返回的資料
-    handleData(data);
-    // 清理全局回調函數
+    renderLeaderboard(data);
     delete window[callbackName];
+    script.remove();
   };
-  
-  // 創建腳本標籤
   const script = document.createElement('script');
-  script.src = `${API_URL}?family=${family}&callback=${callbackName}`;
-  
-  script.onerror = function() {
-    document.getElementById('children').innerHTML = '<div class="error">載入資料失敗，請檢查網絡連接或重試。</div>';
-    delete window[callbackName];
-  };
-  
-  document.head.appendChild(script);
+  script.src = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
+  document.body.appendChild(script);
 }
 
-function handleData(data) {
-  if (!Array.isArray(data) || data.length === 0) {
-    document.getElementById('children').innerHTML = '<div class="error">沒有找到資料</div>';
+function renderLeaderboard(data) {
+  if (!Array.isArray(data)) {
+    document.getElementById('leaderboard').innerText = '載入失敗';
     return;
   }
-  
-  kids = data;
-  render();
-  const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
-  document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
-}
-
-function render() {
-  const container = document.getElementById('children');
-  container.innerHTML = '';
-
-  kids.forEach((kid, index) => {
-    const maxMinutes = 90;
-    const percentage = Math.min(100, (kid.ScreenMinutes / maxMinutes) * 100);
-    const minutes = kid.Points * 2;
-    const cash = kid.Points * 5;
-    const barColor = kid.ScreenMinutes <= 10 ? 'linear-gradient(90deg, #ff4d4d, #ff0000)' : 'linear-gradient(90deg, #00d4ff, #005eff)';
-
-    const card = document.createElement('div');
-    card.className = 'child-card';
-    card.innerHTML = `
-      <h2>${kid.Name}</h2>
-      <div id="alert${index}" class="alert" style="opacity:0;"></div>
-      <div class="points-box">
-        ${kid.Points} 點
-        <div class="conversion-info">⏱️ ${minutes} 分鐘 💰 ${cash} 元</div>
-      </div>
-      <div class="progress-bar-container">
-        <div class="progress-bar-fill" style="width:${percentage}%; background: ${barColor};"></div>
-        <div class="progress-bar-text">${kid.ScreenMinutes}分</div>
-      </div>
-      <div class="controls">
-        <div class="control-group">
-          <div class="control-group-title">⏳ 螢幕時間設定</div>
-          <input type="number" id="screen${index}" placeholder="減少螢幕時間 (分鐘)">
-          <button onclick="decreaseScreen(${index})">確認減少</button>
-          <input type="number" id="reset${index}" placeholder="手動設定今日螢幕時間">
-          <button onclick="resetScreen(${index})">設定時間</button>
-          <button onclick="convertScreenToPoints(${index})">轉換螢幕時間為點數</button>
-        </div>
-        <div class="control-group">
-          <div class="control-group-title">🎯 點數調整</div>
-          <input type="number" id="points${index}" placeholder="輸入加/減點數">
-          <input type="text" id="reason${index}" placeholder="原因">
-          <button onclick="updatePoints(${index})">確認更新</button>
-        </div>
-      </div>
-      <div>最後修改時間：${kid.LastModified || 'N/A'}</div>
-    `;
-    container.appendChild(card);
+  let html = '<table><tr><th>名字</th><th>總點數</th><th>總螢幕時間</th></tr>';
+  data.forEach(entry => {
+    html += `<tr><td>${entry.Name}</td><td>${entry.TotalPoints}</td><td>${entry.TotalScreenMinutes}</td></tr>`;
   });
+  html += '</table>';
+  document.getElementById('leaderboard').innerHTML = html;
 }
 
-// 使用Fetch API發送POST請求
-function sendDataToSheet(data) {
-  // 顯示發送中提示
-  const alertId = `alert${data.index}`;
-  const alertElement = document.getElementById(alertId);
-  alertElement.innerText = '正在儲存資料...';
-  alertElement.style.opacity = 1;
-  
-  // 準備發送到Google Apps Script的資料
-  const postData = {
+function submitData() {
+  const family = document.getElementById('family').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const pointsChange = document.getElementById('pointsChange').value.trim();
+  const screenMinutesChange = document.getElementById('screenMinutesChange').value.trim();
+  const reason = document.getElementById('reason').value.trim();
+
+  if (!family || !name) {
+    alert('Family 和 Name 必填');
+    return;
+  }
+
+  const payload = {
     Family: family,
-    Name: kids[data.index].Name,
-    ScreenMinutes: data.screenMinutes !== undefined ? data.screenMinutes : kids[data.index].ScreenMinutes,
-    PointsChange: data.pointsChange || 0,
-    Reason: data.reason || ''
+    Name: name,
+    PointsChange: pointsChange,
+    ScreenMinutesChange: screenMinutesChange,
+    Reason: reason
   };
-  
-  // 使用fetch API發送請求
-  fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(postData),
-    mode: 'no-cors' // 這對於跨域請求是必要的
-  })
-  .then(() => {
-    // 由於mode: 'no-cors'，我們無法讀取響應，所以直接假設成功
-    alertElement.innerText = '資料已儲存!';
-    setTimeout(() => {
-      alertElement.style.opacity = 0;
-    }, 3000);
-    
-    // 重新載入資料以顯示最新狀態
-    setTimeout(loadData, 1000);
-  })
-  .catch(error => {
-    alertElement.innerText = `儲存失敗: ${error.message}`;
-    console.error('儲存資料失敗:', error);
-  });
-}
 
-function updatePoints(index) {
-  const change = parseInt(document.getElementById(`points${index}`).value);
-  const reason = document.getElementById(`reason${index}`).value;
-  
-  if (isNaN(change)) {
-    showAlert(index, '請輸入有效的點數');
-    return;
-  }
-  
-  sendDataToSheet({
-    index: index,
-    pointsChange: change,
-    reason: reason
-  });
-  
-  // 清空輸入欄位
-  document.getElementById(`points${index}`).value = '';
-  document.getElementById(`reason${index}`).value = '';
-}
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+  document.body.appendChild(iframe);
 
-function decreaseScreen(index) {
-  const minutes = parseInt(document.getElementById(`screen${index}`).value);
-  
-  if (isNaN(minutes) || minutes <= 0) {
-    showAlert(index, '請輸入有效的分鐘數');
-    return;
-  }
-  
-  const newScreenTime = Math.max(0, kids[index].ScreenMinutes - minutes);
-  
-  sendDataToSheet({
-    index: index,
-    screenMinutes: newScreenTime,
-    reason: `減少螢幕時間 ${minutes} 分鐘`
-  });
-  
-  // 清空輸入欄位
-  document.getElementById(`screen${index}`).value = '';
-}
-
-function resetScreen(index) {
-  const minutes = parseInt(document.getElementById(`reset${index}`).value);
-  
-  if (isNaN(minutes) || minutes < 0) {
-    showAlert(index, '請輸入有效的分鐘數');
-    return;
-  }
-  
-  sendDataToSheet({
-    index: index,
-    screenMinutes: minutes,
-    reason: `重設螢幕時間為 ${minutes} 分鐘`
-  });
-  
-  // 清空輸入欄位
-  document.getElementById(`reset${index}`).value = '';
-}
-
-function convertScreenToPoints(index) {
-  const availableMinutes = kids[index].ScreenMinutes;
-  const pointsToAdd = Math.floor(availableMinutes / 2);
-  
-  if (pointsToAdd <= 0) {
-    showAlert(index, '沒有足夠的螢幕時間可轉換');
-    return;
-  }
-
-  if (confirm(`將剩餘 ${availableMinutes} 分鐘轉換成 ${pointsToAdd} 點嗎？`)) {
-    sendDataToSheet({
-      index: index,
-      screenMinutes: 0,
-      pointsChange: pointsToAdd,
-      reason: `將 ${availableMinutes} 分鐘螢幕時間轉換為 ${pointsToAdd} 點`
-    });
-  }
-}
-
-function showAlert(index, message) {
-  const alertElement = document.getElementById(`alert${index}`);
-  alertElement.innerText = message;
-  alertElement.style.opacity = 1;
-  
+  alert('送出成功');
   setTimeout(() => {
-    alertElement.style.opacity = 0;
-  }, 3000);
+    location.reload();
+  }, 1500);
 }
 
-// 初始載入
-window.onload = loadData;
+fetchLeaderboard();
 </script>
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-    Made by Evelyn YT ｜© 2025 | 更新：2025/4/28 10:43
-</div>
+Made by Evelyn YT ｜© 2025 | 2025/4/28 11:03
 </body>
 </html>
