@@ -78,16 +78,28 @@
       margin-top: 10px;
       gap: 10px;
     }
-    .convert-button-group button {
-      padding: 8px 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: #111;
-      font-weight: bold;
-      cursor: pointer;
-    }
+.convert-button-group button {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #444;
+  color: #eee;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* hover效果 */
+.convert-button-group button:hover {
+  background: #666;
+}
+
+/* 按下（active）效果 */
+.convert-button-group button:active {
+  background: #888;
+}
+
     #form-section {
       background: #2a2a5a;
       padding: 20px;
@@ -110,18 +122,29 @@
       text-align: left;
       padding-left: 10%;
     }
-  #form-section button {
-    padding: 10px;
-    margin: 8px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    width: 80%;
-    background: #00d4ff;
-    color: #111;
-    font-weight: bold;
-    cursor: pointer;
-  }
+#form-section button {
+  padding: 10px;
+  margin: 8px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  width: 80%;
+  background: #00d4ff;
+  color: #111;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* hover效果 */
+#form-section button:hover {
+  background: #00bbff;
+}
+
+/* 按下（active）效果 */
+#form-section button:active {
+  background: #0099cc;
+}
     #family-filter {
   display: flex;
   justify-content: center;
@@ -189,6 +212,10 @@
   color: #111;
   font-weight: bold;
 }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
   </style>
 </head>
@@ -233,7 +260,15 @@ function clearFamilyFilter() {
   localStorage.removeItem('familyFilter');
   fetchLeaderboard();
 }
-
+function showLoading() {
+  document.getElementById('leaderboard').innerHTML = `
+    <div style="margin: 20px;">
+      <div style="border: 4px solid #333; border-top: 4px solid #00d4ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;"></div>
+      <div style="margin-top: 10px; font-size: 18px;">載入中...</div>
+    </div>
+  `;
+}
+  
 function fetchLeaderboard() {
   const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
   const script = document.createElement('script');
