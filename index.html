@@ -256,6 +256,26 @@
   background: #777;
 }
 
+    @keyframes flash {
+  0% { background-color: #00d4ff; }
+  50% { background-color: #ffffff; }
+  100% { background-color: #00d4ff; }
+}
+
+.flash {
+  animation: flash 0.5s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 0.5s;
+}
+
   </style>
 </head>
 <body>
@@ -369,11 +389,11 @@ data.forEach(entry => {
     html += `
     <div class="child-card">
       <div class="child-name">👦 ${entry.Name}</div>
-      <div class="points-box">⭐ ${entry.TotalPoints} 點
+      <div class="points-box pulse">⭐ ${entry.TotalPoints} 點
         <div class="conversion-info">⏳ ${screenMinutes} 分鐘 ｜ 💰 ${cash} 元</div>
       </div>
       <div class="progress-title">📺 今日螢幕時間</div>
-      <div class="progress-bar-container">
+      <div class="progress-bar-container flash">
         <div class="progress-bar-fill" style="width:${percentage}%"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
@@ -559,7 +579,7 @@ function deductScreenTime(name, minutesToDeduct) {
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 13:11
+Made by Evelyn YT ｜© 2025 | 2025/4/28 13:12
 </div>
 
 </body>
