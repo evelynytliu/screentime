@@ -100,11 +100,15 @@
       cursor: pointer;
     }
     .alert {
-      color: #00ff88;
+      color: #00ff88; /* 成功或提示訊息顏色 */
       font-weight: bold;
       margin-top: 10px;
       transition: opacity 0.5s ease;
+      min-height: 1em; /* 確保即使沒有內容也有高度，避免佈局跳動 */
     }
+     .alert.error {
+        color: #ff6b6b; /* 錯誤訊息顏色 */
+     }
   </style>
 </head>
 <body>
@@ -113,210 +117,360 @@
 <div id="family-select"></div>
 <div id="current-family"></div>
 <div id="children"></div>
-<div style="margin-top: 30px;"><button id="reset-family" onclick="resetFamilyChoice()">重新選擇家庭</button></div>
-
-<script>
+<div style="margin-top: 30px;"><button id="reset-family" onclick="resetFamilyChoice()" style="display: none;">重新選擇家庭</button></div> <script>
+// 請將這裡的 URL 替換為您重新發布 Apps Script 網頁應用程式後獲取的 URL
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
-let kids = [];
-let family = localStorage.getItem('family') || '';
+let kids = []; // 儲存從 Apps Script 載入的統計資料 (K:M 對應到 Name, Points, ScreenMinutes)
+let family = localStorage.getItem('family') || ''; // 從 localStorage 獲取儲存的家庭選項
 
+// 頁面載入時的初始化邏輯：
+// 如果 localStorage 中已經有儲存的家庭選項，則直接載入資料；
+// 否則，顯示家庭選擇按鈕。
+if (family) {
+  console.log("頁面載入時，已找到儲存的家庭選項:", family, "，嘗試載入資料...");
+  // 載入資料，然後隱藏選擇按鈕並顯示重選按鈕
+  loadData().then(() => {
+      document.getElementById('family-select').style.display = 'none'; // 隱藏選擇按鈕
+      document.getElementById('reset-family').style.display = 'block'; // 顯示重選按鈕
+  });
+} else {
+  console.log("頁面載入時，未找到儲存的家庭選項，顯示家庭選擇...");
+  chooseFamily(); // 呼叫 chooseFamily 函數顯示選擇按鈕
+  document.getElementById('reset-family').style.display = 'none'; // 隱藏重選按鈕
+}
+
+
+// 顯示家庭選擇按鈕的函數
 function chooseFamily() {
   const container = document.getElementById('family-select');
+   container.style.display = 'block'; // 確保家庭選擇區域顯示
   container.innerHTML = `
+    <p>請選擇家庭:</p>
     <button onclick="selectFamily('ev-family')">Emmett & Miles</button>
     <button onclick="selectFamily('ap-family')">Archer & Tessa</button>
   `;
-  document.getElementById('current-family').innerText = '';
+  document.getElementById('current-family').innerText = ''; // 清空顯示當前家庭的區域
+  document.getElementById('children').innerHTML = ''; // 清空顯示孩子資料的區域
 }
 
+
+// 選擇家庭後觸發的函數
 function selectFamily(fam) {
-  family = fam;
-  localStorage.setItem('family', family);
-  loadData();
+  family = fam; // 設定全局變數 family
+  localStorage.setItem('family', family); // 將選擇的家庭儲存到 localStorage
+  console.log("已選擇家庭:", family);
+  document.getElementById('family-select').style.display = 'none'; // 隱藏家庭選擇按鈕區域
+  document.getElementById('reset-family').style.display = 'block'; // 顯示「重新選擇家庭」按鈕
+  loadData(); // 呼叫 loadData 函數載入選定家庭的資料
 }
 
+
+// 重新選擇家庭的函數
 function resetFamilyChoice() {
-  localStorage.removeItem('family');
-  family = '';
-  document.getElementById('children').innerHTML = '';
-  chooseFamily();
+  console.log("重新選擇家庭...");
+  localStorage.removeItem('family'); // 從 localStorage 移除儲存的家庭選項
+  family = ''; // 清空全局變數 family
+  document.getElementById('children').innerHTML = ''; // 清空顯示的孩子資料
+  document.getElementById('current-family').innerText = ''; // 清空顯示的當前家庭
+  document.getElementById('reset-family').style.display = 'none'; // 隱藏「重新選擇家庭」按鈕
+  chooseFamily(); // 重新顯示家庭選擇按鈕
 }
-function loadScriptWithCallback(url, callback) {
-  const script = document.createElement('script');
-  window[callback] = function(data) {
-    script.remove();  // 移除腳本標籤以避免內存洩漏
-    delete window[callback];  // 清理全局函數
-    handleData(data);  // 實際處理資料
-  };
-  script.src = url;
-  script.onerror = function() {
-    document.getElementById('children').innerHTML = '<div class="alert">載入資料失敗</div>';
-    script.remove();
-    delete window[callback];
-  };
-  document.head.appendChild(script);
-}
-function loadData() {
+
+
+// 從 Google Sheet 的 K:M 欄位載入統計資料的函數
+async function loadData() {
+  // 在這裡重新檢查一次 family，確保在呼叫 fetch 之前 family 是有值的
   if (!family) {
-    chooseFamily();
-    return;
+      console.error("loadData 函數被呼叫，但 family 變數為空。這不應該發生。");
+      chooseFamily(); // 作為一個備用方案，如果發生此情況則顯示選擇按鈕
+      return;
   }
-  
-  document.getElementById('children').innerHTML = '<div>正在載入資料...</div>';
-  
-  // 建立唯一的回調函數名稱
-  const callbackName = 'jsonCallback_' + Math.floor(Math.random() * 1000000);
-  
-  // 載入資料
-  loadScriptWithCallback(`${API_URL}?family=${family}&callback=${callbackName}`, callbackName);
+
+  console.log("正在從 Apps Script 載入 K:M 統計資料，family:", family);
+  document.getElementById('children').innerHTML = '<div>正在載入資料...</div>'; // 顯示載入中的文字
+  // 顯示當前選擇的家庭名稱
+  document.getElementById('current-family').innerText = `目前家庭：${family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa'}`;
+
+  try {
+      // 使用 fetch API 發送 GET 請求到 Apps Script
+      const res = await fetch(`${API_URL}?family=${family}`);
+      console.log("收到資料載入請求的回應:", res); // 記錄收到的回應對象
+
+      if (!res.ok) {
+        // 如果 HTTP 狀態碼不是成功的
+        const text = await res.text();
+        const errorMsg = `HTTP 錯誤! 狀態碼: ${res.status}, 訊息: ${text}`;
+        console.error("資料載入失敗，HTTP 錯誤:", errorMsg); // 記錄錯誤訊息
+        document.getElementById('children').innerHTML = `<div class="alert error">資料載入錯誤: ${errorMsg}</div>`; // 顯示錯誤訊息
+        kids = []; // 清空 kids 資料
+        return;
+      }
+
+      // 嘗試讀取回應的 JSON 內容
+      const data = await res.json();
+      console.log("資料載入成功，解析後的資料:", data); // 記錄解析後的資料
+
+      // 檢查從 Apps Script 返回的資料中是否包含錯誤訊息屬性 (如果 Apps Script 返回了錯誤對象)
+      if (data && data.error) {
+          document.getElementById('children').innerHTML = `<div class="alert error">錯誤: ${data.error}</div>`; // 顯示來自後端的錯誤訊息
+          kids = []; // 清空 kids 資料
+          console.error("Apps Script 返回錯誤資料:", data.error);
+          return;
+      }
+
+      // 檢查返回的資料是否為陣列且不為空
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料</div>'; // 顯示未找到資料訊息
+        kids = []; // 清空 kids 資料
+         console.log("從 Apps Script 獲取的資料為空或不是陣列。");
+        return;
+      }
+
+      // 如果資料載入成功且有效
+      // 將獲取的資料儲存到 kids 變數
+      // 數據格式應該是 [{ Name: '...', Points: '...', ScreenMinutes: '...' }, ...]
+      kids = data;
+      render(); // 呼叫 render 函數來顯示資料
+
+  } catch (error) {
+      // 捕獲 fetch 請求過程中發生的任何錯誤 (包括網路錯誤或之前拋出的 HTTP 錯誤)
+      console.error("資料載入發生錯誤:", error); // 記錄錯誤訊息
+       // 在網頁上顯示錯誤訊息
+      document.getElementById('children').innerHTML = `<div class="alert error">資料載入錯誤: ${error.message}</div>`;
+      kids = []; // 清空 kids 資料
+  }
 }
 
-function handleData(data) {
-  console.log("資料載入成功:", data);
-  if (!Array.isArray(data) || data.length === 0) {
-    document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料</div>';
-    return;
-  }
-  kids = data;
-  render();
-  const displayName = family === 'ev-family' ? 'Emmett & Miles' : 'Archer & Tessa';
-  document.getElementById('current-family').innerText = `目前家庭：${displayName}`;
-}  
-  
-function saveData(index) {
-  console.log("嘗試儲存資料，索引:", index, "資料:", kids[index]); // 新增日誌
 
-  fetch(`${API_URL}?family=${family}`, {
-    method: 'POST',
-    body: JSON.stringify(kids[index]),
-    headers: { 'Content-Type': 'application/json' }
-  })
-  .then(res => {
-    console.log("收到儲存請求的回應:", res); // 新增日誌
-    if (!res.ok) {
-      // 如果 HTTP 狀態碼不是成功的 (例如 404, 500 等)
-      // 嘗試讀取回應的文字內容作為錯誤訊息
-      return res.text().then(text => {
-          const errorMsg = `HTTP 錯誤! 狀態碼: ${res.status}, 訊息: ${text}`;
-          console.error("儲存失敗，HTTP 錯誤:", errorMsg); // 新增日誌
-          throw new Error(errorMsg); // 拋出錯誤以便被 catch 捕獲
-      });
-    }
-    // 如果回應狀態碼是 OK 的，讀取回應的文字內容
-    return res.text();
-  })
-  .then(responseText => {
-    // 這裡的 responseText 是 Apps Script 中 doPost 函數返回的文字 (例如 'Done' 或 'Row not found' 或 'Error: ...')
-    console.log("儲存成功，Apps Script 回應:", responseText); // 新增日誌
-    // 檢查 Apps Script 返回的訊息是否表示成功
-    if (responseText === 'Done') {
-        // 儲存成功後，重新載入資料以更新網頁顯示
-        loadData();
-        // 清空可能的錯誤訊息顯示
-        // document.getElementById(`alert${index}`).innerText = '';
-    } else {
-        // 如果 Apps Script 返回了非 'Done' 的訊息，可能表示後端有邏輯錯誤或未找到行
-         const alertElement = document.getElementById(`alert${index}`);
-         if(alertElement) {
-             alertElement.innerText = `儲存錯誤: ${responseText}`; // 在網頁上顯示錯誤訊息
-         }
-         console.error("Apps Script 返回非預期訊息:", responseText); // 新增日誌
-    }
-  })
-  .catch(error => {
-    // 捕獲 fetch 請求過程中發生的任何錯誤 (包括之前拋出的 HTTP 錯誤)
-    console.error("儲存資料發生錯誤:", error); // 新增日誌
-     const alertElement = document.getElementById(`alert${index}`);
-     if(alertElement) {
-        alertElement.innerText = `儲存資料錯誤: ${error.message}`; // 在網頁上顯示錯誤訊息
-     }
-  });
-}
-
+// 將 kids 陣列中的統計數據渲染到網頁上的函數
 function render() {
   const container = document.getElementById('children');
-  container.innerHTML = '';
+  container.innerHTML = ''; // 清空現有的孩子列表顯示
+
+  if (!Array.isArray(kids) || kids.length === 0) {
+      console.log("渲染函數被呼叫，但 kids 陣列為空。");
+      document.getElementById('children').innerHTML = '<div class="alert">沒有找到資料可供顯示</div>';
+      return;
+  }
+
+  // 隱藏家庭選擇按鈕，確保只顯示孩子資料和重選按鈕
+   document.getElementById('family-select').style.display = 'none';
+
 
   kids.forEach((kid, index) => {
-    const maxMinutes = 90;
-    const percentage = Math.min(100, (kid.ScreenMinutes / maxMinutes) * 100);
-    const minutes = kid.Points * 2;
-    const cash = kid.Points * 5;
-    const barColor = kid.ScreenMinutes <= 10 ? 'linear-gradient(90deg, #ff4d4d, #ff0000)' : 'linear-gradient(90deg, #00d4ff, #005eff)';
+    // 為每個孩子創建一個顯示卡片
+    const maxMinutes = 90; // 假設最大螢幕時間為 90 分鐘
+    // 確保從 Apps Script 獲取的 Points 和 ScreenMinutes 是數字
+    const currentPoints = parseFloat(kid.Points) || 0;
+    const currentScreenMinutes = parseFloat(kid.ScreenMinutes) || 0;
+
+
+    // 計算螢幕時間的百分比進度條
+    const percentage = Math.min(100, (currentScreenMinutes / maxMinutes) * 100);
+    // 計算點數對應的分鐘和金額 (這裡假設是統計後的總點數和總螢幕時間)
+    const minutes = currentPoints * 2; // 這個轉換邏輯似乎用於點數可以兌換分鐘
+    const cash = currentPoints * 5; // 這個轉換邏輯似乎用於點數可以兌換金額
+    // 根據螢幕時間決定進度條顏色
+    const barColor = currentScreenMinutes <= 10 ? 'linear-gradient(90deg, #ff4d4d, #ff0000)' : 'linear-gradient(90deg, #00d4ff, #005eff)';
 
     const card = document.createElement('div');
     card.className = 'child-card';
     card.innerHTML = `
-      <h2>${kid.Name}</h2>
-      <div id="alert${index}" class="alert" style="opacity:0;"></div>
-      <div class="points-box">
-        ${kid.Points} 點
-        <div class="conversion-info">⏱️ ${minutes} 分鐘 💰 ${cash} 元</div>
+      <h2>${kid.Name || '無姓名'}</h2>
+      <div id="alert${index}" class="alert" style="opacity:0;"></div> <div class="points-box">
+        總點數: ${currentPoints} 點
+        <div class="conversion-info">基於總點數: ⏱️ ${minutes} 分鐘 💰 ${cash} 元</div>
       </div>
       <div class="progress-bar-container">
         <div class="progress-bar-fill" style="width:${percentage}%; background: ${barColor};"></div>
-        <div class="progress-bar-text">${kid.ScreenMinutes}分</div>
+        <div class="progress-bar-text">${currentScreenMinutes}分</div>
       </div>
       <div class="controls">
         <div class="control-group">
-          <div class="control-group-title">⏳ 螢幕時間設定</div>
-          <input type="number" id="screen${index}" placeholder="減少螢幕時間 (分鐘)">
-          <button onclick="decreaseScreen(${index})">確認減少</button>
-          <input type="number" id="reset${index}" placeholder="手動設定今日螢幕時間">
-          <button onclick="resetScreen(${index})">設定時間</button>
-          <button onclick="convertScreenToPoints(${index})">轉換螢幕時間為點數</button>
+          <div class="control-group-title">⏳ 螢幕時間變動記錄</div>
+          <input type="number" id="screenChange${index}" placeholder="輸入變動值 (分鐘)">
+           <input type="text" id="screenReason${index}" placeholder="原因">
+          <button onclick="recordScreenChange(${index})">記錄變動</button>
         </div>
         <div class="control-group">
-          <div class="control-group-title">🎯 點數調整</div>
-          <input type="number" id="points${index}" placeholder="輸入加/減點數">
-          <input type="text" id="reason${index}" placeholder="原因">
-          <button onclick="updatePoints(${index})">確認更新</button>
+          <div class="control-group-title">🎯 點數變動記錄</div>
+          <input type="number" id="pointsChange${index}" placeholder="輸入變動值">
+          <input type="text" id="pointsReason${index}" placeholder="原因">
+          <button onclick="recordPointsChange(${index})">記錄變動</button>
         </div>
-      </div>
-      <div>最後修改時間：${kid.LastModified || 'N/A'}</div>
-    `;
+         </div>
+       `;
     container.appendChild(card);
+     // 在渲染後，隱藏 alert 訊息
+     hideAlert(index);
   });
 }
 
-function updatePoints(index) {
-  const change = parseInt(document.getElementById(`points${index}`).value);
-  if (isNaN(change)) return;
-  kids[index].Points += change;
-  saveData(index);
+// 顯示操作結果訊息的函數
+function showAlert(index, message, isError = false) {
+    const alertElement = document.getElementById(`alert${index}`);
+    if (alertElement) {
+        alertElement.innerText = message;
+        alertElement.className = isError ? 'alert error' : 'alert'; // 根據是否為錯誤添加 class
+        alertElement.style.opacity = 1; // 顯示訊息
+        // 可選：設定計時器在幾秒後自動隱藏
+        // setTimeout(() => {
+        //     hideAlert(index);
+        // }, 5000); // 5秒後隱藏
+    }
 }
 
-function decreaseScreen(index) {
-  const minutes = parseInt(document.getElementById(`screen${index}`).value);
-  if (isNaN(minutes) || minutes <= 0) return;
-  kids[index].ScreenMinutes = Math.max(0, kids[index].ScreenMinutes - minutes);
-  saveData(index);
+// 隱藏操作結果訊息的函數
+function hideAlert(index) {
+     const alertElement = document.getElementById(`alert${index}`);
+      if (alertElement) {
+        alertElement.innerText = '';
+         alertElement.className = 'alert'; // 移除 error class
+        alertElement.style.opacity = 0; // 隱藏訊息
+      }
 }
 
-function resetScreen(index) {
-  const minutes = parseInt(document.getElementById(`reset${index}`).value);
-  if (isNaN(minutes) || minutes < 0) return;
-  kids[index].ScreenMinutes = minutes;
-  kids[index].LastModified = new Date().toLocaleString('zh-TW', { hour12: false });
-  saveData(index);
+
+// 記錄點數變動到 A:F 的函數
+function recordPointsChange(index) {
+  const pointsChangeInput = document.getElementById(`pointsChange${index}`);
+  const pointsChange = parseFloat(pointsChangeInput.value); // 允許小數點變動
+  const reasonInput = document.getElementById(`pointsReason${index}`);
+  const reason = reasonInput.value.trim(); // 獲取原因並去除前後空白
+
+  if (isNaN(pointsChange) || reason === '') {
+      console.warn("記錄點數變動：輸入無效。變動值或原因為空。", pointsChangeInput.value, reason);
+      showAlert(index, '請輸入有效的點數變動值和原因', true); // 顯示錯誤訊息
+      return;
+  }
+
+  if (!family || !kids[index] || !kids[index].Name) {
+       console.error("記錄點數變動：缺少 family 或孩子資料。");
+       showAlert(index, '儲存錯誤: 缺少家庭或孩子資料', true); // 顯示錯誤訊息
+       return;
+  }
+
+  // 準備要附加到 A:F 的數據對象
+  const dataToAppend = {
+      Name: kids[index].Name, // B欄: Name
+      PointsChange: pointsChange, // C欄: PointsChange
+      ScreenMinutesChange: '', // D欄: ScreenMinutesChange (點數變動時螢幕時間變動為空)
+      Reason: reason, // E欄: Reason
+      // Family 和 Timestamp 會在 Apps Script 中處理
+  };
+
+   console.log("準備記錄點數變動數據:", dataToAppend);
+   showAlert(index, '正在記錄點數變動...');
+
+  // 發送 POST 請求儲存數據 (這次是附加到 A:F)
+  sendRecord(dataToAppend, index);
+
+  // 清空輸入框
+  pointsChangeInput.value = '';
+  reasonInput.value = '';
 }
 
-function convertScreenToPoints(index) {
-  const availableMinutes = kids[index].ScreenMinutes;
-  const pointsToAdd = Math.floor(availableMinutes / 2);
-  if (pointsToAdd <= 0) return;
 
-  if (confirm(`將剩餘 ${availableMinutes} 分鐘轉換成 ${pointsToAdd} 點嗎？`)) {
-    kids[index].Points += pointsToAdd;
-    kids[index].ScreenMinutes = 0;
-    kids[index].LastModified = new Date().toLocaleString('zh-TW', { hour12: false });
-    saveData(index);
+// 記錄螢幕時間變動到 A:F 的函數
+function recordScreenChange(index) {
+  const screenChangeInput = document.getElementById(`screenChange${index}`);
+  const screenChange = parseFloat(screenChangeInput.value); // 允許小數點變動
+   const reasonInput = document.getElementById(`screenReason${index}`);
+  const reason = reasonInput.value.trim();
+
+  if (isNaN(screenChange) || reason === '') {
+      console.warn("記錄螢幕時間變動：輸入無效。變動值或原因為空。", screenChangeInput.value, reason);
+       showAlert(index, '請輸入有效的螢幕時間變動值和原因', true); // 顯示錯誤訊息
+      return;
+  }
+
+   if (!family || !kids[index] || !kids[index].Name) {
+       console.error("記錄螢幕時間變動：缺少 family 或孩子資料。");
+        showAlert(index, '儲存錯誤: 缺少家庭或孩子資料', true); // 顯示錯誤訊息
+       return;
+  }
+
+  // 準備要附加到 A:F 的數據對象
+  const dataToAppend = {
+      Name: kids[index].Name, // B欄: Name
+      PointsChange: '', // C欄: PointsChange (螢幕時間變動時點數變動為空)
+      ScreenMinutesChange: screenChange, // D欄: ScreenMinutesChange
+      Reason: reason, // E欄: Reason
+      // Family 和 Timestamp 會在 Apps Script 中處理
+  };
+
+   console.log("準備記錄螢幕時間變動數據:", dataToAppend);
+    showAlert(index, '正在記錄螢幕時間變動...');
+
+  // 發送 POST 請求儲存數據 (附加到 A:F)
+  sendRecord(dataToAppend, index);
+
+  // 清空輸入框
+  screenChangeInput.value = '';
+  reasonInput.value = '';
+}
+
+
+// 發送 POST 請求將變動記錄儲存到 A:F 的函數
+// 這裡接收一個包含要附加數據的對象 dataToAppend，以及用於顯示訊息的孩子索引 index
+async function sendRecord(dataToAppend, index) {
+   if (!family) {
+      console.error("sendRecord 函數被呼叫，但 family 變數為空。無法儲存。");
+       showAlert(index, '儲存錯誤: 未選擇家庭', true);
+      return;
+  }
+   console.log("嘗試將記錄數據發送到 Apps Script，family:", family, "數據:", JSON.stringify(dataToAppend));
+
+  try {
+      const res = await fetch(`${API_URL}?family=${family}`, {
+        method: 'POST', // 設定請求方法為 POST
+        body: JSON.stringify(dataToAppend), // 將要附加的數據對象轉換為 JSON 字串作為請求主體
+        headers: {
+          'Content-Type': 'application/json' // 設定請求頭，告知伺服器發送的是 JSON 數據
+        }
+      });
+      console.log("收到儲存記錄請求的回應:", res);
+
+      if (!res.ok) {
+          const text = await res.text();
+          const errorMsg = `HTTP 錯誤! 狀態碼: ${res.status}, 訊息: ${text}`;
+          console.error("記錄儲存失敗，HTTP 錯誤:", errorMsg);
+          showAlert(index, `儲存錯誤: ${errorMsg}`, true); // 顯示錯誤訊息
+          return;
+      }
+
+      const responseText = await res.text();
+      console.log("記錄儲存成功，Apps Script 回應文字:", responseText);
+
+      // 根據 Apps Script 返回的文字判斷是否儲存成功
+      if (responseText === 'Done') {
+          console.log("Apps Script 成功處理記錄儲存請求。");
+          showAlert(index, '記錄成功！');
+          // 可選：記錄成功後重新載入數據，以反映總計的變化 (如果您的總計欄位是自動計算的)
+           loadData();
+      } else if (responseText.startsWith('Error:')) {
+           console.error("Apps Script 報告錯誤：", responseText);
+           showAlert(index, `儲存錯誤: ${responseText.substring(7)}`, true); // 顯示錯誤訊息 (移除 "Error: ")
+       }
+       else {
+           console.warn("Apps Script 返回非預期訊息:", responseText);
+            showAlert(index, `儲存錯誤: 非預期回應 (${responseText})`, true); // 顯示非預期訊息
+       }
+
+  } catch (error) {
+      console.error("發送儲存記錄請求發生錯誤:", error);
+       showAlert(index, `儲存記錄請求錯誤: ${error.message}`, true); // 顯示錯誤訊息
   }
 }
 
-loadData();
+
+// 初始化時呼叫 loadData，這個已經在最上面處理了
+
+
 </script>
+
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-    Made by Evelyn YT ｜© 2025 | 2025/4/27 21:00
+    Made by Evelyn YT ｜© 2025 | 2025/4/28 10:05
+</div>
 </body>
 </html>
