@@ -146,12 +146,14 @@ let currentFamily = '';
 
 function fetchLeaderboard() {
   const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
+  
+  const script = document.createElement('script'); // 先建立 script 元素
   window[callbackName] = function(data) {
     renderLeaderboard(data);
     delete window[callbackName];
-    script.remove();
+    script.remove();  // 這時候 script 才存在，才可以 remove！
   };
-  const script = document.createElement('script');
+  
   let url = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
   if (currentFamily) {
     url += `&family=${currentFamily}`;
@@ -159,10 +161,12 @@ function fetchLeaderboard() {
   script.src = url;
   document.body.appendChild(script);
 }
+
 function switchFamily(familyName) {
   currentFamily = familyName;
   fetchLeaderboard();
 }
+
 
 
 function renderLeaderboard(data) {
@@ -307,6 +311,6 @@ function submitData() {
 fetchLeaderboard();
 </script>
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025｜2025/4/28 12:34
+Made by Evelyn YT ｜© 2025｜2025/4/28 12:41
 </body>
 </html>
