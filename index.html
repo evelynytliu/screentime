@@ -154,16 +154,15 @@
   color: #111; /* 字黑色 */
 }
 
-    .checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 🔥 每行兩個 */
   gap: 10px;
   margin-bottom: 20px;
 }
 
 .checkbox-group input[type="checkbox"] {
-  display: none; /* 🔥 隱藏原本的勾勾框框 */
+  display: none;
 }
 
 .checkbox-group label {
@@ -176,6 +175,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   user-select: none;
+  text-align: center;
 }
 
 /* hover效果 */
@@ -183,7 +183,7 @@
   background: #555;
 }
 
-/* 當checkbox被選取時，改變外觀！ */
+/* 選到的時候 */
 .checkbox-group input[type="checkbox"]:checked + label {
   background: #00d4ff;
   color: #111;
@@ -210,10 +210,11 @@
   <input type="number" id="screenMinutesChange" placeholder="📺今日螢幕時間調整">
   <input type="text" id="reason" placeholder="變更原因">
   <button onclick="submitData()">送出 🚀</button>
-
-  <input type="number" id="maxMinutesInput" placeholder="🔧設定最大螢幕時間(分鐘)">
+</div>
+  <div id="form-section">
+  <h2>設定今日螢幕時間進度條比例 📝</h2>
+  <input type="number" id="maxMinutesInput" placeholder="🔧設定今日最大螢幕時間(分鐘)">
   <button onclick="setMaxMinutes()">設定進度條最大時間</button>
-
 </div>
 
 <script>
