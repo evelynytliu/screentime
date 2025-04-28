@@ -127,6 +127,12 @@
 <body>
 
 <h1>🎯 Point & Screen Time ⏳</h1>
+  <div id="family-filter" style="margin-bottom: 20px;">
+  <button onclick="setFamilyFilter('ev-family')">⚡ 閃電森林</button>
+  <button onclick="setFamilyFilter('ap-family')">🍊 柚柚來點名</button>
+  <button onclick="clearFamilyFilter()">❎ 取消篩選</button>
+</div>
+
 <div id="leaderboard">載入中...</div>
 
 <div id="form-section">
@@ -140,6 +146,20 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
+
+let familyFilter = localStorage.getItem('familyFilter') || '';
+
+function setFamilyFilter(family) {
+  familyFilter = family;
+  localStorage.setItem('familyFilter', family);
+  fetchLeaderboard();
+}
+
+function clearFamilyFilter() {
+  familyFilter = '';
+  localStorage.removeItem('familyFilter');
+  fetchLeaderboard();
+}
 
 function fetchLeaderboard() {
   const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
@@ -159,6 +179,17 @@ function renderLeaderboard(data) {
   if (!Array.isArray(data)) {
     leaderboard.innerText = '載入失敗';
     return;
+  }
+  // 🔥 依 familyFilter 篩選小孩
+  if (familyFilter) {
+    data = data.filter(entry => {
+      if (familyFilter === 'ev-family') {
+        return entry.Name === 'Miles' || entry.Name === 'Emmett';
+      } else if (familyFilter === 'ap-family') {
+        return entry.Name === 'Tessa' || entry.Name === 'Archer';
+      }
+      return true;
+    });
   }
 
   const nameList = document.getElementById('name-list');
