@@ -478,7 +478,8 @@ function submitData() {
     document.getElementById('screenMinutesChange').value = '';
     document.getElementById('reason').value = '';
     document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
-    
+
+    showLoading(); // 🔥 先把畫面切成「載入中」！
     // 🔥 加入延遲0.5秒再fetch
     setTimeout(() => {
       fetchLeaderboard();
@@ -611,7 +612,7 @@ function deductScreenTime(name, minutesToDeduct) {
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 13:17
+Made by Evelyn YT ｜© 2025 | 2025/4/28 13:18
 </div>
 
 </body>
