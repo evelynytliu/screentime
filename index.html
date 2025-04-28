@@ -258,7 +258,7 @@
 
     @keyframes flash {
   0% { background-color: #00d4ff; }
-  50% { background-color: #0099cc; }
+  50% { background-color: #00475e; }
   100% { background-color: #00d4ff; }
 }
 
@@ -308,9 +308,9 @@
 </div>
 
 <script>
-  let updatedChildName = '';
-
   let currentScreenTimes = {}; 
+  let updatedPointsChildName = '';
+  let updatedScreenMinutesChildName = '';
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
 
@@ -397,11 +397,11 @@ data.forEach(entry => {
     html += `
     <div class="child-card">
       <div class="child-name">👦 ${entry.Name}</div>
-      <div class="points-box ${entry.Name === updatedChildName ? 'pulse' : ''}">⭐ ${entry.TotalPoints} 點
+      <div class="points-box ${entry.Name === updatedPointsChildName ? 'pulse' : ''}">⭐ ${entry.TotalPoints} 點
         <div class="conversion-info">⏳ ${screenMinutes} 分鐘 ｜ 💰 ${cash} 元</div>
       </div>
       <div class="progress-title">📺 今日螢幕時間</div>
-      <div class="progress-bar-container ${entry.Name === updatedChildName ? 'flash' : ''}">
+      <div class="progress-bar-container ${entry.Name === updatedScreenMinutesChildName ? 'flash' : ''}">
       <div class="progress-bar-fill" style="width:${percentage}%"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
@@ -433,7 +433,8 @@ function submitData() {
 
   checkboxes.forEach(checkbox => {
     const name = checkbox.value;
-    updatedChildName = name;
+    updatedScreenMinutesChildName = name;
+    updatedPointsChildName = '';
     let family = '';
 
     if (name === 'Miles' || name === 'Emmett') {
@@ -488,8 +489,9 @@ function convertScreenTime(name, minutes) {
     ScreenMinutesChange: -minutes,
     Reason: '螢幕時間轉點數'
   };
-  updatedChildName = name;
-
+    updatedScreenMinutesChildName = name;
+    updatedPointsChildName = '';
+  
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
@@ -518,8 +520,9 @@ function convertPointsToScreen(name, points) {
     ScreenMinutesChange: minutesToAdd,
     Reason: '點數轉螢幕時間'
   };
-  updatedChildName = name;
-
+    updatedScreenMinutesChildName = name;
+    updatedPointsChildName = '';
+  
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
@@ -578,8 +581,8 @@ function deductScreenTime(name, minutesToDeduct) {
     ScreenMinutesChange: -minutesToDeduct,
     Reason: `扣除螢幕時間${minutesToDeduct}分鐘`
   };
-updatedChildName = name;
-
+    updatedScreenMinutesChildName = name;
+    updatedPointsChildName = '';
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
