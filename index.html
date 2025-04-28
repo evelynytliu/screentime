@@ -217,16 +217,15 @@
   100% { transform: rotate(360deg); }
 }
 .deduct-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 🔥 分成6格 */
+  gap: 6px; /* 🔥 按鈕之間有一點點間距 */
   margin-top: 10px;
-  flex-wrap: nowrap; /* 🔥 不換行 */
-  overflow-x: auto; /* 🔥 如果真的很擠，可以左右滑動 */
+  margin-bottom: 10px;
 }
 
 .deduct-buttons button {
-  padding: 6px 12px;
+  padding: 6px 0; /* 🔥 上下padding，不要左右，保持小巧 */
   font-size: 16px;
   border-radius: 10px;
   border: none;
@@ -234,7 +233,7 @@
   color: #ccc;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 0 0 auto; /* 🔥 讓每顆按鈕固定大小 */
+  width: 100%; /* 🔥 讓每個按鈕填滿自己那一格 */
 }
 
 .deduct-buttons button:hover {
@@ -244,7 +243,6 @@
 .deduct-buttons button:active {
   background: #777;
 }
-
 
   </style>
 </head>
