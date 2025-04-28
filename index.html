@@ -391,12 +391,12 @@ data.forEach(entry => {
     html += `
     <div class="child-card">
       <div class="child-name">👦 ${entry.Name}</div>
-      <div class="points-box pulse">⭐ ${entry.TotalPoints} 點
+      <div class="points-box ${entry.Name === updatedChildName ? 'pulse' : ''}">⭐ ${entry.TotalPoints} 點
         <div class="conversion-info">⏳ ${screenMinutes} 分鐘 ｜ 💰 ${cash} 元</div>
       </div>
       <div class="progress-title">📺 今日螢幕時間</div>
       <div class="progress-bar-container flash">
-        <div class="progress-bar-fill" style="width:${percentage}%"></div>
+      <div class="progress-bar-container ${entry.Name === updatedChildName ? 'flash' : ''}">
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
       <div class="deduct-buttons">
@@ -587,7 +587,7 @@ updatedChildName = name;
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 13:12
+Made by Evelyn YT ｜© 2025 | 2025/4/28 13:13
 </div>
 
 </body>
