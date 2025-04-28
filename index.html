@@ -473,13 +473,17 @@ function submitData() {
     document.body.appendChild(iframe);
   });
 
-  alert('已送出！');
-  document.getElementById('pointsChange').value = '';
-  document.getElementById('screenMinutesChange').value = '';
-  document.getElementById('reason').value = '';
-  document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
-  fetchLeaderboard();
-}
+    alert('已送出！');
+    document.getElementById('pointsChange').value = '';
+    document.getElementById('screenMinutesChange').value = '';
+    document.getElementById('reason').value = '';
+    document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    // 🔥 加入延遲0.5秒再fetch
+    setTimeout(() => {
+      fetchLeaderboard();
+    }, 500);
+    }
 
 function convertScreenTime(name, minutes) {
   if (minutes <= 0) {
