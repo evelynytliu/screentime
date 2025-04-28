@@ -501,6 +501,16 @@ function setMaxMinutes() {
   fetchLeaderboard(); // 重新渲染
 }
 function deductScreenTime(name, minutesToDeduct) {
+  if (currentScreenTimes[name] === undefined) {
+    alert('找不到小孩的螢幕時間資料');
+    return;
+  }
+
+  if (currentScreenTimes[name] < minutesToDeduct) {
+    alert(`螢幕時間不足，無法扣除 ${minutesToDeduct} 分鐘！`);
+    return;
+  }
+
   const confirmDeduct = confirm(`確定要扣除 ${minutesToDeduct} 分鐘的螢幕時間嗎？`);
   if (!confirmDeduct) return;
 
@@ -533,10 +543,11 @@ function deductScreenTime(name, minutesToDeduct) {
   fetchLeaderboard();
 }
 
+
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025 | 2025/4/28 14:35
+Made by Evelyn YT ｜© 2025 | 2025/4/28 15:11
 </div>
 
 </body>
