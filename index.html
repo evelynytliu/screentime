@@ -272,6 +272,8 @@
 </div>
 
 <script>
+  let currentScreenTimes = {}; 
+
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
 
 let familyFilter = localStorage.getItem('familyFilter') || '';
@@ -330,6 +332,7 @@ function renderLeaderboard(data) {
   const nameList = document.getElementById('name-list');
   nameList.innerHTML = '';
 data.forEach(entry => {
+    currentScreenTimes[entry.Name] = entry.TotalScreenMinutes; // 🔥 記錄每個小孩目前的螢幕時間
   const id = 'child-' + entry.Name; // 🔥 產生一個獨特id（防止重複）
   
   const checkbox = document.createElement('input');
