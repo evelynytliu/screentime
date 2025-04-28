@@ -582,7 +582,7 @@ function deductScreenTime(name, minutesToDeduct) {
     Reason: `扣除螢幕時間${minutesToDeduct}分鐘`
   };
     updatedScreenMinutesChildName = name;
-    updatedPointsChildName = '';
+
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
