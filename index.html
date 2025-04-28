@@ -72,13 +72,18 @@
       color: #fff;
       font-size: 20px;
     }
-    .convert-button {
-      margin: 5px;
-      padding: 10px 20px;
+    .convert-button-group {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 10px;
+    }
+    .convert-button-group button {
+      padding: 8px 12px;
       font-size: 16px;
       border: none;
-      border-radius: 10px;
-      background: #00d4ff;
+      border-radius: 8px;
+      background: #444;
       color: #111;
       font-weight: bold;
       cursor: pointer;
@@ -90,7 +95,7 @@
       max-width: 400px;
       margin: 40px auto;
     }
-    input, button {
+    input[type="number"], input[type="text"], button {
       padding: 10px;
       margin: 8px;
       font-size: 16px;
@@ -98,84 +103,74 @@
       border: none;
       width: 80%;
     }
-    button {
-      background: #00d4ff;
-      color: #111;
-      cursor: pointer;
-      font-weight: bold;
+    .checkbox-group label {
+      display: block;
+      margin: 5px 0;
+      font-size: 16px;
+      text-align: left;
+      padding-left: 10%;
     }
-    table {
-      display: none;
-    }
-    .convert-button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-.convert-button {
-  flex: 1;
-  padding: 10px 0;
-}
-
+  #form-section button {
+    padding: 10px;
+    margin: 8px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    width: 80%;
+    background: #00d4ff;
+    color: #111;
+    font-weight: bold;
+    cursor: pointer;
+  }
   </style>
 </head>
 <body>
 
 <h1>🎯 Point & Screen Time ⏳</h1>
-  <div id="family-switch">
-  <button onclick="switchFamily('ev-family')">Emmett & Miles</button>
-  <button onclick="switchFamily('ap-family')">Archer & Tessa</button>
-</div>
 <div id="leaderboard">載入中...</div>
 
 <div id="form-section">
   <h2>送出新紀錄 📝</h2>
-  <input type="text" id="family" placeholder="Family">
-  <input type="text" id="name" placeholder="Name">
-  <input type="number" id="pointsChange" placeholder="PointsChange">
-  <input type="number" id="screenMinutesChange" placeholder="ScreenMinutesChange">
-  <input type="text" id="reason" placeholder="Reason">
+  <div id="name-list" class="checkbox-group"></div>
+  <input type="number" id="pointsChange" placeholder="⭐點數調整">
+  <input type="number" id="screenMinutesChange" placeholder="📺今日螢幕時間調整">
+  <input type="text" id="reason" placeholder="變更原因">
   <button onclick="submitData()">送出 🚀</button>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
 
-let currentFamily = '';
-
 function fetchLeaderboard() {
   const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
-  
-  const script = document.createElement('script'); // 先建立 script 元素
+  const script = document.createElement('script');
   window[callbackName] = function(data) {
     renderLeaderboard(data);
     delete window[callbackName];
-    script.remove();  // 這時候 script 才存在，才可以 remove！
+    script.remove();
   };
-  
-  let url = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
-  if (currentFamily) {
-    url += `&family=${currentFamily}`;
-  }
+  const url = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
   script.src = url;
   document.body.appendChild(script);
 }
 
-function switchFamily(familyName) {
-  currentFamily = familyName;
-  fetchLeaderboard();
-}
-
-
-
 function renderLeaderboard(data) {
+  const leaderboard = document.getElementById('leaderboard');
   if (!Array.isArray(data)) {
-    document.getElementById('leaderboard').innerText = '載入失敗';
+    leaderboard.innerText = '載入失敗';
     return;
   }
+
+  const nameList = document.getElementById('name-list');
+  nameList.innerHTML = '';
+  data.forEach(entry => {
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="checkbox" value="${entry.Name}"> ${entry.Name}`;
+    nameList.appendChild(label);
+  });
+
   let html = '';
-  data.forEach((entry, index) => {
+  data.forEach(entry => {
     const percentage = Math.min(100, (entry.TotalScreenMinutes / 120) * 100);
     const screenMinutes = entry.TotalPoints * 2;
     const cash = entry.TotalPoints * 5;
@@ -190,47 +185,90 @@ function renderLeaderboard(data) {
         <div class="progress-bar-fill" style="width:${percentage}%"></div>
         <div class="progress-bar-text">${entry.TotalScreenMinutes} 分鐘</div>
       </div>
-<div class="convert-button-group">
-  <button class="convert-button" onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">📺 ➔ ⭐</button>
-  <button class="convert-button" onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">⭐ ➔ 📺</button>
-</div>
-
+      <div class="convert-button-group">
+        <button onclick="convertScreenTime('${entry.Name}', ${entry.TotalScreenMinutes})">📺 ➔ ⭐</button>
+        <button onclick="convertPointsToScreen('${entry.Name}', ${entry.TotalPoints})">⭐ ➔ 📺</button>
+      </div>
     </div>
     `;
   });
-  document.getElementById('leaderboard').innerHTML = html;
+  leaderboard.innerHTML = html;
+}
+
+function submitData() {
+  const checkboxes = document.querySelectorAll('#name-list input[type="checkbox"]:checked');
+  const pointsChange = document.getElementById('pointsChange').value.trim();
+  const screenMinutesChange = document.getElementById('screenMinutesChange').value.trim();
+  const reason = document.getElementById('reason').value.trim();
+
+  if (checkboxes.length === 0) {
+    alert('請選擇至少一個小孩！');
+    return;
+  }
+
+  checkboxes.forEach(checkbox => {
+    const name = checkbox.value;
+    let family = '';
+
+    if (name === 'Miles' || name === 'Emmett') {
+      family = 'ev-family';
+    } else if (name === 'Tessa' || name === 'Archer') {
+      family = 'ap-family';
+    }
+
+    if (!family) {
+      alert(`找不到 ${name} 對應的家庭！`);
+      return;
+    }
+
+    const payload = {
+      Family: family,
+      Name: name,
+      PointsChange: pointsChange,
+      ScreenMinutesChange: screenMinutesChange,
+      Reason: reason
+    };
+
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
+    document.body.appendChild(iframe);
+  });
+
+  alert('已送出！');
+  document.getElementById('pointsChange').value = '';
+  document.getElementById('screenMinutesChange').value = '';
+  document.getElementById('reason').value = '';
+  document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+  fetchLeaderboard();
 }
 
 function convertScreenTime(name, minutes) {
-  const pointsToAdd = Math.floor(minutes / 2);
-  if (pointsToAdd <= 0) {
+  if (minutes <= 0) {
     alert('沒有可轉換的螢幕時間！');
     return;
   }
 
-  const family = prompt('請輸入 Family 名稱以確認：');
-  if (!family) {
-    alert('取消轉換');
+  if (!confirm('你確定要把今日螢幕時間轉換成點數嗎？')) {
     return;
   }
 
+  const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
+  const pointsToAdd = Math.floor(minutes / 2);
   const payload = {
     Family: family,
     Name: name,
     PointsChange: pointsToAdd,
     ScreenMinutesChange: -minutes,
-    Reason: '螢幕時間轉換為點數'
+    Reason: '螢幕時間轉點數'
   };
-
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
   document.body.appendChild(iframe);
 
-  alert(`已將 ${minutes} 分鐘轉換成 ${pointsToAdd} 點！`);
-  setTimeout(() => {
-    location.reload();
-  }, 1500);
+  alert(`已將 ${minutes} 分鐘螢幕時間轉換成 ${pointsToAdd} 點！`);
+  fetchLeaderboard();
 }
 
 function convertPointsToScreen(name, points) {
@@ -238,79 +276,35 @@ function convertPointsToScreen(name, points) {
     alert('沒有可轉換的點數！');
     return;
   }
-
-  const family = prompt('請輸入 Family 名稱以確認：');
-  if (!family) {
-    alert('取消轉換');
-    return;
-  }
-
+  const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
   const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：`), 10);
-
-  if (isNaN(pointsToConvert) || pointsToConvert <= 0) {
-    alert('輸入的數量無效');
+  if (isNaN(pointsToConvert) || pointsToConvert <= 0 || pointsToConvert > points) {
+    alert('輸入的數量無效或超過現有點數');
     return;
   }
-  if (pointsToConvert > points) {
-    alert('不能轉換超過現有點數的數量');
-    return;
-  }
-
   const minutesToAdd = pointsToConvert * 2;
-
   const payload = {
     Family: family,
     Name: name,
     PointsChange: -pointsToConvert,
     ScreenMinutesChange: minutesToAdd,
-    Reason: '點數轉換為螢幕時間'
+    Reason: '點數轉螢幕時間'
   };
-
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
   document.body.appendChild(iframe);
 
   alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
-  setTimeout(() => {
-    location.reload();
-  }, 1500);
-}
-
-function submitData() {
-  const family = document.getElementById('family').value.trim();
-  const name = document.getElementById('name').value.trim();
-  const pointsChange = document.getElementById('pointsChange').value.trim();
-  const screenMinutesChange = document.getElementById('screenMinutesChange').value.trim();
-  const reason = document.getElementById('reason').value.trim();
-
-  if (!family || !name) {
-    alert('Family 和 Name 必填');
-    return;
-  }
-
-  const payload = {
-    Family: family,
-    Name: name,
-    PointsChange: pointsChange,
-    ScreenMinutesChange: screenMinutesChange,
-    Reason: reason
-  };
-
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
-  document.body.appendChild(iframe);
-
-  alert('送出成功');
-  setTimeout(() => {
-    location.reload();
-  }, 1500);
+  fetchLeaderboard();
 }
 
 fetchLeaderboard();
 </script>
+
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜© 2025｜2025/4/28 12:41
+Made by Evelyn YT ｜© 2025
+</div>
+
 </body>
 </html>
