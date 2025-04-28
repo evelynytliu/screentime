@@ -378,7 +378,7 @@ data.forEach(entry => {
       </div>
       <div class="deduct-buttons">
   ${[5,10,15,20,25,30].map(minutes => `
-    <button onclick="deductScreenTime('${entry.Name}', ${minutes})">${minutes}</button>
+    <button onclick="deductScreenTime('${entry.Name}', ${minutes})">-${minutes}</button>
   `).join('')}
 </div>
       <div class="convert-button-group">
