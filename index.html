@@ -511,7 +511,7 @@
       submitToApi(payload, () => {
         updatedCount++;
         if (updatedCount === totalChecked) {
-          setTimeout(fetchLeaderboard, 1000);
+          setTimeout(fetchLeaderboard, 500); // 改為0.5秒延遲
         }
       });
     });
@@ -557,7 +557,7 @@
     };
     
     startShimmerEffect(name);
-    submitToApi(payload, () => setTimeout(fetchLeaderboard, 1000));
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, 500)); // 改為0.5秒延遲
   }
 
   function convertPointsToScreen(name, points) {
@@ -585,7 +585,7 @@
     
     startShimmerEffect(name);
     submitToApi(payload, () => {
-      setTimeout(fetchLeaderboard, 1000);
+      setTimeout(fetchLeaderboard, 500); // 改為0.5秒延遲
       alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
     });
   }
@@ -618,7 +618,7 @@
     };
     
     startShimmerEffect(name);
-    submitToApi(payload, () => setTimeout(fetchLeaderboard, 1000));
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, 500)); // 改為0.5秒延遲
   }
 
   function setMaxMinutes() {
@@ -637,7 +637,7 @@
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜ © 2025 ｜ 2025/5/16 11:46
+Made by Evelyn YT ｜ © 2025 ｜ 2025/5/16 12:02
 </div>
 
 </body>
