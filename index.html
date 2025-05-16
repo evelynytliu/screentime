@@ -21,7 +21,7 @@
       box-shadow: 0 4px 15px rgba(0,212,255,0.4);
       max-width: 400px;
       position: relative;
-      overflow: hidden; /* 重要：防止shimmer效果溢出 */
+      overflow: hidden;
     }
     .child-name {
       font-size: 28px;
@@ -75,6 +75,17 @@
       color: #fff;
       font-size: 20px;
     }
+    /* 合併按鈕基本樣式 */
+    .button-base {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      color: #eee;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
     .convert-button-group {
       display: flex;
       justify-content: center;
@@ -83,25 +94,10 @@
     }
     .convert-button-group button {
       padding: 8px 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
       background: #444;
-      color: #eee;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
     }
-
-    /* hover效果 */
-    .convert-button-group button:hover {
-      background: #666;
-    }
-
-    /* 按下（active）效果 */
-    .convert-button-group button:active {
-      background: #888;
-    }
+    .convert-button-group button:hover { background: #666; }
+    .convert-button-group button:active { background: #888; }
 
     #form-section {
       background: #2a2a5a;
@@ -118,79 +114,52 @@
       border: none;
       width: 80%;
     }
-    .checkbox-group label {
-      display: block;
-      margin: 5px 0;
-      font-size: 16px;
-      text-align: left;
-      padding-left: 10%;
-    }
     #form-section button {
-      padding: 10px;
-      margin: 8px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      width: 80%;
       background: #00d4ff;
       color: #111;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
     }
-
-    /* hover效果 */
-    #form-section button:hover {
-      background: #00bbff;
-    }
-
-    /* 按下（active）效果 */
-    #form-section button:active {
-      background: #0099cc;
-    }
+    #form-section button:hover { background: #00bbff; }
+    #form-section button:active { background: #0099cc; }
+    
     #family-filter {
       display: flex;
       justify-content: center;
-      gap: 10px; /* 按鈕之間的間距 */
+      gap: 10px;
       margin-bottom: 20px;
     }
-
     #family-filter button {
       padding: 10px 20px;
       font-size: 16px;
       border-radius: 8px;
-      background: #333; /* 🔥 深灰色起始 */
-      color: #ccc; /* 🔥 字淺灰 */
+      background: #333;
+      color: #ccc;
       font-weight: bold;
       border: none;
       cursor: pointer;
     }
-
-    #family-filter button:hover {
-      background: #555; /* hover時淺一點的灰 */
-    }
-
-    #family-filter button:active {
-      background: #777; /* 按下去更亮一點 */
-    }
-
-    /* 🔥 選取的按鈕 */
+    #family-filter button:hover { background: #555; }
+    #family-filter button:active { background: #777; }
     #family-filter button.active-filter {
-      background: #00d4ff; /* 亮藍色 */
-      color: #111; /* 字黑色 */
+      background: #00d4ff;
+      color: #111;
+    }
+    #family-filter .small-button {
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .checkbox-group {
       display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 🔥 每行兩個 */
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       margin-bottom: 20px;
     }
-
-    .checkbox-group input[type="checkbox"] {
-      display: none;
-    }
-
+    .checkbox-group input[type="checkbox"] { display: none; }
     .checkbox-group label {
       display: inline-block;
       padding: 12px 20px;
@@ -203,43 +172,21 @@
       user-select: none;
       text-align: center;
     }
-
-    /* hover效果 */
-    .checkbox-group label:hover {
-      background: #555;
-    }
-
-    /* 選到的時候 */
+    .checkbox-group label:hover { background: #555; }
     .checkbox-group input[type="checkbox"]:checked + label {
       background: #00d4ff;
       color: #111;
       font-weight: bold;
     }
 
-    #family-filter .small-button {
-      padding: 0;
-      width: 40px;
-      height: 40px;
-      font-size: 22px; /* 字大一點 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
     .deduct-buttons {
       display: grid;
-      grid-template-columns: repeat(6, 1fr); /* 🔥 分成6格 */
-      gap: 6px; /* 🔥 按鈕之間有一點點間距 */
-      margin-top: 10px;
-      margin-bottom: 10px;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin: 10px 0;
     }
-
     .deduct-buttons button {
-      padding: 6px 0; /* 🔥 上下padding，不要左右，保持小巧 */
+      padding: 6px 0;
       font-size: 16px;
       border-radius: 10px;
       border: none;
@@ -247,47 +194,32 @@
       color: #ccc;
       cursor: pointer;
       transition: all 0.3s ease;
-      width: 100%; /* 🔥 讓每個按鈕填滿自己那一格 */
+      width: 100%;
     }
+    .deduct-buttons button:hover { background: #555; }
+    .deduct-buttons button:active { background: #777; }
 
-    .deduct-buttons button:hover {
-      background: #555;
+    /* 動畫效果 */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-
-    .deduct-buttons button:active {
-      background: #777;
-    }
-
     @keyframes flash {
       0% { background-color: #00d4ff; }
       50% { background-color: #00475e; }
       100% { background-color: #00d4ff; }
     }
-
-    .flash {
-      animation: flash 0.6s;
-    }
-
+    .flash { animation: flash 0.6s; }
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.15); }
       100% { transform: scale(1); }
     }
-
-    .pulse {
-      animation: pulse 0.5s;
-    }
-
-    /* 新增: shimmer效果 */
+    .pulse { animation: pulse 0.5s; }
     @keyframes shimmer {
-      0% {
-        background-position: 200% 0;
-      }
-      100% {
-        background-position: -200% 0;
-      }
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
-
     .shimmer-effect {
       position: absolute;
       top: 0;
@@ -302,15 +234,25 @@
       );
       background-size: 200% 100%;
       animation: shimmer 4s infinite;
-      pointer-events: none; /* 讓滑鼠可以穿透shimmer層 */
+      pointer-events: none;
       z-index: 10;
+    }
+    
+    .loading-spinner {
+      border: 4px solid #333;
+      border-top: 4px solid #00d4ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: auto;
     }
   </style>
 </head>
 <body>
 
 <h1>⭐ & 📺</h1>
-<div id="family-filter" style="margin-bottom: 20px;">
+<div id="family-filter">
   <button onclick="setFamilyFilter('ev-family')">⚡ 閃電森林</button>
   <button onclick="setFamilyFilter('ap-family')">🍊 柚柚來點名</button>
   <button onclick="clearFamilyFilter()" class="small-button">❎</button>
@@ -318,7 +260,7 @@
 
 <div id="leaderboard">
   <div style="margin: 20px;">
-    <div style="border: 4px solid #333; border-top: 4px solid #00d4ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;"></div>
+    <div class="loading-spinner"></div>
     <div style="margin-top: 10px; font-size: 18px;">載入中...</div>
   </div>
 </div>
@@ -337,19 +279,24 @@
 </div>
 
 <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
   let currentScreenTimes = {}; 
   let updatingChildren = {};  // 存儲正在更新的小孩名稱
-  let pendingUpdates = {};    // 存儲等待更新的請求
-
-  const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
-
+  let maxMinutes = localStorage.getItem('maxMinutes') ? parseInt(localStorage.getItem('maxMinutes')) : 120;
   let familyFilter = localStorage.getItem('familyFilter') || '';
 
+  // 初始載入
+  document.addEventListener('DOMContentLoaded', fetchLeaderboard);
+  
+  // 過濾相關函數
   function setFamilyFilter(family) {
     familyFilter = family;
     localStorage.setItem('familyFilter', family);
     showLoading();
     fetchLeaderboard();
+    
+    // 高亮顯示選中的按鈕
+    updateFilterButtons();
   }
 
   function clearFamilyFilter() {
@@ -357,12 +304,31 @@
     localStorage.removeItem('familyFilter');
     showLoading();
     fetchLeaderboard();
+    
+    // 移除所有按鈕的高亮
+    updateFilterButtons();
   }
   
+  function updateFilterButtons() {
+    // 移除所有按鈕的高亮
+    document.querySelectorAll('#family-filter button').forEach(btn => {
+      btn.classList.remove('active-filter');
+    });
+    
+    // 如果有過濾器設置，高亮對應按鈕
+    if (familyFilter) {
+      const activeBtn = document.querySelector(`#family-filter button[onclick="setFamilyFilter('${familyFilter}')"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active-filter');
+      }
+    }
+  }
+  
+  // 載入相關函數
   function showLoading() {
     document.getElementById('leaderboard').innerHTML = `
       <div style="margin: 20px;">
-        <div style="border: 4px solid #333; border-top: 4px solid #00d4ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;"></div>
+        <div class="loading-spinner"></div>
         <div style="margin-top: 10px; font-size: 18px;">載入中...</div>
       </div>
     `;
@@ -370,7 +336,6 @@
   
   function fetchLeaderboard() {
     const callbackName = 'cb_' + Math.floor(Math.random() * 1000000);
-    const script = document.createElement('script');
     window[callbackName] = function(data) {
       renderLeaderboard(data);
       
@@ -381,11 +346,17 @@
       updatingChildren = {};
       
       delete window[callbackName];
-      script.remove();
     };
-    const url = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
-    script.src = url;
+    
+    const script = document.createElement('script');
+    script.src = `${API_URL}?action=getLeaderboard&callback=${callbackName}`;
+    script.onload = function() {
+      this.remove(); // 加載後立即移除腳本元素
+    };
     document.body.appendChild(script);
+    
+    // 更新過濾器按鈕狀態
+    updateFilterButtons();
   }
 
   function renderLeaderboard(data) {
@@ -407,6 +378,15 @@
       });
     }
 
+    // 更新選擇框
+    updateNameCheckboxes(data);
+    
+    // 渲染卡片
+    renderChildCards(data);
+  }
+  
+  // 拆分渲染功能以增加可讀性
+  function updateNameCheckboxes(data) {
     const nameList = document.getElementById('name-list');
     nameList.innerHTML = '';
     
@@ -427,7 +407,9 @@
       nameList.appendChild(checkbox);
       nameList.appendChild(label);
     });
-
+  }
+  
+  function renderChildCards(data) {
     let html = '';
     data.forEach(entry => {
       const percentage = Math.min(100, (entry.TotalScreenMinutes / maxMinutes) * 100);
@@ -458,35 +440,30 @@
       </div>
       `;
     });
-    leaderboard.innerHTML = html;
+    document.getElementById('leaderboard').innerHTML = html;
   }
 
-  // 新增: 添加shimmer效果
+  // shimmer效果相關函數
   function startShimmerEffect(name) {
     updatingChildren[name] = true;
     const card = document.getElementById(`card-${name}`);
-    if (card) {
-      // 檢查是否已經有shimmer效果
-      if (!card.querySelector('.shimmer-effect')) {
-        const shimmerDiv = document.createElement('div');
-        shimmerDiv.className = 'shimmer-effect';
-        card.appendChild(shimmerDiv);
-      }
+    if (card && !card.querySelector('.shimmer-effect')) {
+      const shimmerDiv = document.createElement('div');
+      shimmerDiv.className = 'shimmer-effect';
+      card.appendChild(shimmerDiv);
     }
   }
 
-  // 新增: 移除shimmer效果
   function stopShimmerEffect(name) {
     delete updatingChildren[name];
     const card = document.getElementById(`card-${name}`);
     if (card) {
       const shimmer = card.querySelector('.shimmer-effect');
-      if (shimmer) {
-        shimmer.remove();
-      }
+      if (shimmer) shimmer.remove();
     }
   }
-
+  
+  // 資料送出相關函數
   function submitData() {
     const checkboxes = document.querySelectorAll('#name-list input[type="checkbox"]:checked');
     const pointsChange = document.getElementById('pointsChange').value.trim();
@@ -521,7 +498,6 @@
         return;
       }
 
-      // 添加shimmer效果
       startShimmerEffect(name);
 
       const payload = {
@@ -532,16 +508,12 @@
         Reason: reason
       };
 
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.onload = function() {
+      submitToApi(payload, () => {
         updatedCount++;
         if (updatedCount === totalChecked) {
-          setTimeout(fetchLeaderboard, 1000); // 所有資料送出後延遲1秒刷新頁面
+          setTimeout(fetchLeaderboard, 1000);
         }
-      };
-      iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
-      document.body.appendChild(iframe);
+      });
     });
 
     // 清空表單
@@ -550,41 +522,42 @@
     document.getElementById('reason').value = '';
     document.querySelectorAll('#name-list input[type="checkbox"]').forEach(cb => cb.checked = false);
   }
-
-function convertScreenTime(name, minutes) {
-  if (minutes <= 0) {
-    alert('沒有可轉換的螢幕時間！');
-    return;
-  }
-
-  const pointsToAdd = Math.floor(minutes / 2); // 🔥 提到這裡，先算好要轉多少點
-
-  const confirmMessage = `你確定要把今日螢幕時間轉換成點數嗎？\n\n【將轉換】${minutes} 分鐘螢幕時間\n【可獲得】${pointsToAdd} 點`; // 🔥 組好訊息
-
-  if (!confirm(confirmMessage)) {
-    return;
-  }
-
-  const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
-  const payload = {
-    Family: family,
-    Name: name,
-    PointsChange: pointsToAdd,
-    ScreenMinutesChange: -minutes,
-    Reason: '螢幕時間轉點數'
-  };
-    
-    // 添加shimmer效果
-    startShimmerEffect(name);
-    
+  
+  // 簡化API提交過程
+  function submitToApi(payload, callback) {
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.onload = function() {
-      setTimeout(fetchLeaderboard, 1000); // 延遲1秒刷新頁面
+      callback();
+      this.remove(); // 加載後移除iframe
     };
     iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
     document.body.appendChild(iframe);
+  }
 
+  // 轉換相關函數
+  function convertScreenTime(name, minutes) {
+    if (minutes <= 0) {
+      alert('沒有可轉換的螢幕時間！');
+      return;
+    }
+
+    const pointsToAdd = Math.floor(minutes / 2);
+    const confirmMessage = `你確定要把今日螢幕時間轉換成點數嗎？\n\n【將轉換】${minutes} 分鐘螢幕時間\n【可獲得】${pointsToAdd} 點`;
+
+    if (!confirm(confirmMessage)) return;
+
+    const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
+    const payload = {
+      Family: family,
+      Name: name,
+      PointsChange: pointsToAdd,
+      ScreenMinutesChange: -minutes,
+      Reason: '螢幕時間轉點數'
+    };
+    
+    startShimmerEffect(name);
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, 1000));
   }
 
   function convertPointsToScreen(name, points) {
@@ -592,12 +565,15 @@ function convertScreenTime(name, minutes) {
       alert('沒有可轉換的點數！');
       return;
     }
+    
     const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
     const pointsToConvert = parseInt(prompt(`目前有 ${points} 點，請輸入要轉換的點數數量：\n1點 → 2分鐘`), 10);
+    
     if (isNaN(pointsToConvert) || pointsToConvert <= 0 || pointsToConvert > points) {
       alert('輸入的數量無效或超過現有點數');
       return;
     }
+    
     const minutesToAdd = pointsToConvert * 2;
     const payload = {
       Family: family,
@@ -607,18 +583,11 @@ function convertScreenTime(name, minutes) {
       Reason: '點數轉螢幕時間'
     };
     
-    // 添加shimmer效果
     startShimmerEffect(name);
-    
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.onload = function() {
-      setTimeout(fetchLeaderboard, 1000); // 延遲1秒刷新頁面
-    };
-    iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
-    document.body.appendChild(iframe);
-
-    alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
+    submitToApi(payload, () => {
+      setTimeout(fetchLeaderboard, 1000);
+      alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
+    });
   }
 
   function deductScreenTime(name, minutesToDeduct) {
@@ -632,16 +601,9 @@ function convertScreenTime(name, minutes) {
       return;
     }
 
-    const confirmDeduct = confirm(`確定要扣除 ${minutesToDeduct} 分鐘的螢幕時間嗎？`);
-    if (!confirmDeduct) return;
+    if (!confirm(`確定要扣除 ${minutesToDeduct} 分鐘的螢幕時間嗎？`)) return;
 
-    let family = '';
-    if (name === 'Miles' || name === 'Emmett') {
-      family = 'ev-family';
-    } else if (name === 'Tessa' || name === 'Archer') {
-      family = 'ap-family';
-    }
-
+    const family = (name === 'Miles' || name === 'Emmett') ? 'ev-family' : 'ap-family';
     if (!family) {
       alert('找不到對應家庭');
       return;
@@ -655,20 +617,9 @@ function convertScreenTime(name, minutes) {
       Reason: `扣除螢幕時間${minutesToDeduct}分鐘`
     };
     
-    // 添加shimmer效果
     startShimmerEffect(name);
-
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.onload = function() {
-      setTimeout(fetchLeaderboard, 1000); // 延遲1秒刷新頁面
-    };
-    iframe.src = `${API_URL}?action=submit&data=${encodeURIComponent(JSON.stringify(payload))}`;
-    document.body.appendChild(iframe);
-
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, 1000));
   }
-
-  let maxMinutes = localStorage.getItem('maxMinutes') ? parseInt(localStorage.getItem('maxMinutes')) : 120;
 
   function setMaxMinutes() {
     const input = document.getElementById('maxMinutesInput').value.trim();
@@ -683,13 +634,10 @@ function convertScreenTime(name, minutes) {
     localStorage.setItem('maxMinutes', maxMinutes);
     fetchLeaderboard(); // 重新渲染
   }
-
-  // 初始載入
-  fetchLeaderboard();
 </script>
 
 <div style="margin-top: 60px; font-size: 0.9em; color: #aaa; text-align: center;">
-Made by Evelyn YT ｜ © 2025 ｜ 2025/4/28 19:33
+Made by Evelyn YT ｜ © 2025 ｜ 2025/5/16 11:46
 </div>
 
 </body>
