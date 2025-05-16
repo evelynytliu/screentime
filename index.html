@@ -279,6 +279,8 @@
 </div>
 
 <script>
+  const REFRESH_DELAY = 500; // 統一延遲時間（毫秒）
+  
   const API_URL = "https://script.google.com/macros/s/AKfycbw29KdvF1gSJnTjcDn0LZCvJ06JLdK4YLE5L7V3Zy0ai6qHOONYmeV-AsMLA97N9mC-lA/exec";
   let currentScreenTimes = {}; 
   let updatingChildren = {};  // 存儲正在更新的小孩名稱
@@ -511,7 +513,7 @@
       submitToApi(payload, () => {
         updatedCount++;
         if (updatedCount === totalChecked) {
-          setTimeout(fetchLeaderboard, 500); // 改為0.5秒延遲
+          setTimeout(fetchLeaderboard, REFRESH_DELAY); // 延遲時間
         }
       });
     });
@@ -557,7 +559,7 @@
     };
     
     startShimmerEffect(name);
-    submitToApi(payload, () => setTimeout(fetchLeaderboard, 500)); // 改為0.5秒延遲
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, RESH_DELAY)); // 延遲時間
   }
 
   function convertPointsToScreen(name, points) {
@@ -585,7 +587,7 @@
     
     startShimmerEffect(name);
     submitToApi(payload, () => {
-      setTimeout(fetchLeaderboard, 500); // 改為0.5秒延遲
+      setTimeout(fetchLeaderboard, REFRESH_DELAY); // 延遲時間
       alert(`已將 ${pointsToConvert} 點數轉換成 ${minutesToAdd} 分鐘螢幕時間！`);
     });
   }
@@ -618,7 +620,7 @@
     };
     
     startShimmerEffect(name);
-    submitToApi(payload, () => setTimeout(fetchLeaderboard, 500)); // 改為0.5秒延遲
+    submitToApi(payload, () => setTimeout(fetchLeaderboard, REFRESH_DELAY)); // 延遲時間
   }
 
   function setMaxMinutes() {
